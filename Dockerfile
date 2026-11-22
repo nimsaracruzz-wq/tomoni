@@ -34,7 +34,7 @@ COPY --from=build /app/admin ./admin
 COPY --from=build /app/backend ./backend
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/migrations ./migrations
-COPY --from=build /app/src/backend-launcher.mjs ./src/backend-launcher.mjs
+COPY --from=build /app/src ./src
 
 RUN mkdir -p /app/data
 EXPOSE 3000

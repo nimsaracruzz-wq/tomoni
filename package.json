@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0 -p 3000",
     "lint": "eslint",
     "create-admin": "node --env-file-if-exists=.env scripts/create-admin.mjs",
     "init-secrets": "node scripts/init-secrets.mjs"
