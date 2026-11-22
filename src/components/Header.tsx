@@ -114,8 +114,8 @@ export default function Header({
               })}
             </nav>
 
-            {/* Desktop Right CTA */}
-            <div className="hidden sm:flex items-center gap-3">
+            {/* Desktop Right CTA — only visible at lg+ alongside desktop nav */}
+            <div className="hidden lg:flex items-center gap-3">
               {handleAction ? (
                 <button
                   type="button"
