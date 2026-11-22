@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tomoni · Administration</title>
+    <link rel="stylesheet" href="/admin/admin.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <button
+          class="icon-btn mobile-menu sidebar-close"
+          id="sidebar-close"
+          aria-label="Close navigation"
+        >
+          <i data-lucide="x"></i></button
+        ><a class="brand" href="/admin"
+          ><img class="brand-logo" src="/images/tomoni-logo.jpeg" alt="" 
+          ><span>TOMONI<small>Institute administration</small></span></a
+        >
+        <div class="nav-label">WORKSPACE</div>
+        <nav id="nav" aria-label="Administration"></nav>
+        <div class="sidebar-bottom">
+          <a href="/" class="public-link"
+            ><i data-lucide="arrow-up-right"></i> Public website</a
+          >
+          <div class="sidebar-caption">Learn together. Grow together.</div>
+        </div>
+      </aside>
+      <div class="workspace">
+        <header class="topbar">
+          <div class="topbar-left">
+            <button
+              class="icon-btn mobile-menu"
+              id="menu-toggle"
+              aria-label="Toggle navigation"
+              aria-expanded="false"
+            >
+              <i data-lucide="menu"></i></button
+            ><span class="workspace-label">Tomoni workspace</span
+            ><span class="separator">/</span
+            ><span id="breadcrumb">Overview</span>
+          </div>
+          <div class="topbar-right">
+            <span id="account-label"></span
+            ><button
+              class="icon-btn"
+              id="logout"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <i data-lucide="log-out"></i>
+            </button>
+          </div>
+        </header>
+        <main id="main" tabindex="-1">
+          <div class="loading-state" role="status">Loading your workspace…</div>
+        </main>
+        <footer class="workspace-footer">
+          Tomoni Japanese Language Institute <span>Student administration</span>
+        </footer>
+      </div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="modal"><div id="modal-content"></div></dialog>
+    <script src="/admin/icons.js"></script>
+    <script src="/admin/admin.js"></script>
+  </body>
+</html>

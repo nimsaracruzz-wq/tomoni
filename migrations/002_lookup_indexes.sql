@@ -1,0 +1,11 @@
+CREATE INDEX IF NOT EXISTS notes_application_time ON notes(application_id,created_at);
+CREATE INDEX IF NOT EXISTS notes_student_time ON notes(student_id,created_at);
+CREATE INDEX IF NOT EXISTS status_history_application_time ON status_history(application_id,created_at);
+CREATE INDEX IF NOT EXISTS application_student ON applications(student_id,created_at);
+CREATE INDEX IF NOT EXISTS email_recipient_application ON email_recipients(application_id);
+CREATE INDEX IF NOT EXISTS email_recipient_student ON email_recipients(student_id);
+CREATE INDEX IF NOT EXISTS email_attempt_recipient ON email_attempts(recipient_id,started_at);
+CREATE INDEX IF NOT EXISTS campaign_status_time ON campaigns(status,created_at);
+CREATE INDEX IF NOT EXISTS application_tag_lookup ON application_tags(tag_id);
+CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions(expires_at);
+CREATE INDEX IF NOT EXISTS rate_limit_expiry ON rate_limits(reset_at);

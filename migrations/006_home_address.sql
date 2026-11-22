@@ -1,0 +1,2 @@
+ALTER TABLE applications ADD COLUMN home_address TEXT NOT NULL DEFAULT '';
+ALTER TABLE students ADD COLUMN home_address TEXT NOT NULL DEFAULT '';

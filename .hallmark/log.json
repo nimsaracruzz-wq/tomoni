@@ -1,0 +1,12 @@
+[
+  {
+    "mode": "redesign",
+    "depth": "polish",
+    "scope": "site",
+    "genre": "editorial",
+    "prompt": "Polish the TOMONI site so it keeps its rounded design without generated-looking decoration.",
+    "preserved": ["rounded design", "original red, cream, and ink palette", "existing content and wiring"],
+    "fixed": ["arbitrary colour utilities", "transition-all", "uppercase and tracked label treatment", "decorative image zoom and glass blur"],
+    "outcome": "Floor 0 FAIL · 5 WARN"
+  }
+]

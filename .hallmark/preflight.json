@@ -1,0 +1,21 @@
+{
+  "scanned": "2026-11-19",
+  "findings": {
+    "fonts": "DM Sans and DM Serif Display via next/font in src/app/layout.tsx",
+    "palette": "warm off-white, ink, and vermilion CSS custom properties in src/app/globals.css",
+    "motion": "CSS route and menu keyframes in src/app/globals.css",
+    "spacing": "Tailwind v4 utility spacing with a 7xl centered content convention",
+    "framework": "Next.js 16 App Router with Tailwind CSS 4"
+  },
+  "preserve": [
+    "rounded design language",
+    "existing TOMONI content and navigation",
+    "real Japan and school photography"
+  ],
+  "introduce": [
+    "token-only visual colors",
+    "quieter component hierarchy",
+    "accessible focus and motion treatments",
+    "Hallmark design gates"
+  ]
+}

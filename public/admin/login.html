@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tomoni · Staff sign in</title>
+    <link rel="stylesheet" href="/admin/admin.css?v=login-refresh" />
+  </head>
+  <body class="login-body">
+    <main class="login-panel">
+      <a class="login-brand" href="/" aria-label="Return to the Tomoni public website">
+        <img class="brand-logo" src="/images/tomoni-logo.jpeg" alt="Tomoni Japanese Language Institute" />
+      </a>
+      <div class="eyebrow">STAFF WORKSPACE</div>
+      <h1>Welcome back</h1>
+      <p class="muted">
+        Sign in to manage registrations and student communications.
+      </p>
+      <form id="login-form">
+        <label
+          >Email address<input
+            type="email"
+            name="email"
+            autocomplete="username"
+            required /></label
+        ><label
+          >Password<input
+            type="password"
+            name="password"
+            autocomplete="current-password"
+            required
+            maxlength="256"
+        /></label>
+        <p id="login-error" class="form-error" role="alert"></p>
+        <button class="btn primary" type="submit">
+          <span class="button-label">Sign in</span><span aria-hidden="true">→</span>
+        </button>
+      </form>
+      <p class="login-help">
+        Access is limited to authorized institute staff.<br />Contact your
+        administrator if you need an account.
+      </p>
+      <a class="back-link" href="/">← Return to the public website</a>
+    </main>
+    <script src="/admin/login.js"></script>
+  </body>
+</html>

@@ -1,26 +1,208 @@
+/* Hallmark · checked: 2026-11-19 · genre: editorial (inferred) · scope: site
+ * floor: 0 FAIL · fixed: 238 · built: the project · redesign: polish · v2.0.0 */
+/* Critique: the original rounded system is worth keeping; effects and ad-hoc colours were competing with the content. */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Restrict Tailwind v4's content scanner away from the SQLite data directory. */
+@source "../../src/**/*.{ts,tsx,js,jsx}";
+@source "../../public/**/*.html";
+@source not "../../data/**/*";
 
 @theme inline {
+  --font-serif: var(--font-serif), "DM Serif Display", Georgia, serif;
+  --font-sans: var(--font-sans), "DM Sans", system-ui, sans-serif;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-warm: var(--paper-warm);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-signal: var(--signal);
+  --color-signal-hover: var(--signal-hover);
+  --color-signal-deep: var(--signal-deep);
+  --color-signal-soft: var(--signal-soft);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --radius: 0.625rem;
+  --paper: oklch(0.985 0.006 20);
+  --paper-raised: oklch(0.994 0.004 20);
+  --paper-warm: oklch(0.96 0.012 55);
+  --ink: oklch(0.18 0.01 20);
+  --ink-muted: oklch(0.45 0.01 20);
+  --signal: oklch(0.5 0.2 27);
+  --signal-hover: oklch(0.44 0.18 27);
+  --signal-deep: oklch(0.36 0.14 27);
+  --signal-soft: oklch(0.94 0.035 15);
+  --rule: oklch(0.92 0.012 55);
+  --rule-strong: oklch(0.84 0.018 55);
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper-raised);
+  --card-foreground: var(--ink);
+  --popover: var(--paper-raised);
+  --popover-foreground: var(--ink);
+  --primary: var(--signal);
+  --primary-foreground: oklch(0.99 0.004 20);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.965 0.015 15);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--signal-soft);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: var(--rule);
+  --input: var(--rule-strong);
+  --ring: var(--signal);
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: clip;
+  scrollbar-color: var(--signal) var(--paper-warm);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menu-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes menu-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.route-transition {
+  animation: route-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.menu-backdrop-enter {
+  animation: menu-backdrop-enter 200ms ease-out both;
+}
+
+.menu-panel-enter {
+  animation: menu-panel-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Compatibility utilities used by the shared admissions and content components. */
+.bg-navy {
+  background-color: var(--ink);
+}
+
+.text-navy {
+  color: var(--ink);
+}
+
+.bg-cream {
+  background-color: var(--paper-raised);
+}
+
+.bg-cream-warm {
+  background-color: var(--paper-warm);
+}
+
+.text-stone-dark {
+  color: var(--ink-muted);
+}
+
+.text-stone {
+  color: var(--ink-muted);
+}
+
+.border-border-light {
+  border-color: var(--rule);
+}
+
+.font-serif-heading {
+  font-family: var(--font-serif);
+}
+
+.bg-red {
+  background-color: var(--signal);
+}
+
+.bg-red-hover:hover {
+  background-color: var(--signal-hover);
+}
+
+.text-red {
+  color: var(--signal);
 }
