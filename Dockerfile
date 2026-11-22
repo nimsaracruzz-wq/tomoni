@@ -2,10 +2,12 @@ FROM node:24-alpine AS base
 WORKDIR /app
 
 FROM base AS dependencies
+ENV NODE_ENV=development
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --include=dev
 
 FROM dependencies AS build
+ENV NODE_ENV=production
 COPY . .
 RUN npm run build
 
