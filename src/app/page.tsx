@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import ApplicationModal from "@/components/ApplicationModal";
 import {
   ArrowRight,
   ChevronRight,
-  Menu,
-  X,
   Clock,
   Calendar,
   CheckCircle2,
@@ -19,9 +20,9 @@ import {
   FileText,
   Plane,
   Flag,
+  X,
   type LucideIcon,
 } from "lucide-react";
-import ApplicationModal from "@/components/ApplicationModal";
 
 interface BackendCourse {
   id: string;
@@ -118,21 +119,6 @@ function getCourseIcon(id: string) {
   }
 }
 
-function Logo({ small }: { small?: boolean }) {
-  return (
-    <div className={`relative ${small ? "h-12 w-40" : "h-16 w-52"}`}>
-      <Image
-        src="/images/tomoni_japanese_institute_logo.png"
-        alt="TOMONI Japanese Language Institute"
-        fill
-        sizes="208px"
-        className="object-contain object-left"
-        priority
-      />
-    </div>
-  );
-}
-
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 text-[11px] font-bold text-primary">
@@ -161,7 +147,6 @@ function OutlineBtn({
 }
 
 export default function HomePage() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [courses, setCourses] = useState<BackendCourse[]>(defaultCourses);
   const [selectedCourseId, setSelectedCourseId] = useState<string>("general");
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
@@ -189,30 +174,6 @@ export default function HomePage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-
-    const closeMenu = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeMenu);
-    return () => {
-      document.body.style.overflow = "";
-      window.removeEventListener("keydown", closeMenu);
-    };
-  }, [menuOpen]);
-
-  const nav = [
-    { label: "Home", href: "/" },
-    { label: "Courses", href: "/courses" },
-    { label: "About Us", href: "/about" },
-    { label: "Gallery", href: "/gallery" },
-    { label: "Register", href: "/register" },
-    { label: "Contact", href: "/contact" },
-  ];
-
   const handleOpenApply = (courseId: string = "general") => {
     setSelectedCourseId(courseId);
     setIsApplyModalOpen(true);
@@ -235,6 +196,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen overflow-x-clip bg-background font-sans text-foreground">
+      {/* Shared Header — single hamburger menu */}
+      <Header
+        onOpenConsultation={() => handleOpenApply("general")}
+        onOpenApply={() => handleOpenApply("general")}
+      />
+
       {/* HERO */}
       <section id="hero" className="relative">
         <img
@@ -245,51 +212,8 @@ export default function HomePage() {
           className="absolute right-0 top-0 h-full w-full object-cover md:w-[62%]"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-transparent md:via-background/40" />
-        
+
         <div className="relative mx-auto max-w-6xl px-5">
-          <header className="relative z-30 flex items-center justify-between py-5">
-            <Link href="/" className="focus:outline-none">
-              <Logo />
-            </Link>
-            
-            <nav className="hidden gap-7 text-xs font-medium lg:flex">
-              {nav.map((n, i) => (
-                <Link
-                  key={n.label}
-                  href={n.href}
-                  className={
-                    i === 0
-                      ? "border-b-2 border-primary pb-1 text-primary font-semibold"
-                      : "text-foreground/80 hover:text-primary transition-colors"
-                  }
-                >
-                  {n.label}
-                </Link>
-              ))}
-            </nav>
-
-            <Link
-              href="/register"
-              className="hidden items-center gap-3 rounded-full bg-primary py-1.5 pl-4 pr-1.5 text-xs font-semibold text-primary-foreground sm:inline-flex hover:opacity-95 transition-colors shadow-sm group"
-            >
-              <span>Get Consultation</span>
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-background text-foreground transition-transform group-hover:translate-x-0.5">
-                <ChevronRight className="h-4 w-4 text-primary" />
-              </span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setMenuOpen((open) => !open)}
-              aria-label="Toggle menu"
-              aria-expanded={menuOpen}
-              aria-controls="mobile-navigation"
-              className="relative z-10 grid h-11 w-11 touch-manipulation place-items-center rounded-full bg-primary text-primary-foreground lg:hidden"
-            >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </header>
-
           <div className="max-w-xl pb-16 pt-12">
             <h1 className="mt-3 font-serif text-5xl leading-[1.05] md:text-6xl">
               Your Journey to <span className="text-primary">Japan</span> Starts Here.
@@ -309,55 +233,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {menuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation">
-          <button
-            type="button"
-            className="menu-backdrop-enter absolute inset-0 h-full w-full cursor-default bg-foreground/45"
-            aria-label="Close navigation menu"
-            onClick={() => setMenuOpen(false)}
-          />
-          <nav
-            id="mobile-navigation"
-            aria-label="Mobile Navigation"
-            className="menu-panel-enter absolute inset-x-4 top-4 rounded-2xl border border-border bg-background p-4 shadow-lg"
-          >
-            <div className="mb-3 flex items-center justify-between px-1">
-              <span className="text-sm font-semibold">Menu</span>
-              <button
-                type="button"
-                onClick={() => setMenuOpen(false)}
-                className="grid h-10 w-10 touch-manipulation place-items-center rounded-full bg-muted text-foreground"
-                aria-label="Close navigation menu"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            {nav.map((n, i) => (
-              <Link
-                key={n.label}
-                href={n.href}
-                onClick={() => setMenuOpen(false)}
-                className={`flex min-h-12 touch-manipulation items-center justify-between rounded-xl px-4 py-3 text-sm font-medium ${
-                  i === 0 ? "bg-accent text-primary" : "hover:bg-muted"
-                }`}
-              >
-                <span>{n.label}</span>
-                <ChevronRight className="h-4 w-4 text-primary" />
-              </Link>
-            ))}
-            <Link
-              href="/register"
-              onClick={() => setMenuOpen(false)}
-              className="relative z-10 mt-3 flex min-h-12 w-full touch-manipulation items-center justify-center gap-3 rounded-full bg-primary px-4 py-3 text-xs font-semibold text-primary-foreground shadow-sm"
-            >
-              <span>Get Consultation</span>
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </nav>
-        </div>
-      )}
 
       <main className="mx-auto max-w-6xl space-y-5 px-5 pb-5">
         {/* WHY STUDY IN JAPAN */}
@@ -406,7 +281,7 @@ export default function HomePage() {
             loading="lazy"
             className="h-64 w-full rounded-r-[50%_100%] border-r-8 border-primary object-cover md:h-full"
           />
-          
+
           <div className="p-6">
             <Eyebrow>Our courses</Eyebrow>
             <h2 className="mt-2 font-serif text-3xl leading-tight">Learn Japanese Your Way</h2>
@@ -543,86 +418,18 @@ export default function HomePage() {
         </section>
       </main>
 
-      {/* FOOTER */}
-      <footer id="contact" className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 pb-6 pt-2">
-        <Logo small />
-        <nav className="flex flex-wrap gap-6 text-[10px] font-medium text-muted-foreground">
-          {nav.map((n) => (
-            <Link key={n.label} href={n.href} className="hover:text-primary transition-colors">
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-        
-        {/* Social Icons */}
-        <div className="flex gap-2">
-          {/* YouTube */}
-          <a
-            href="https://youtube.com"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="YouTube"
-            className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-background hover:bg-primary transition-colors"
-          >
-            <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
-          </a>
-
-          {/* Instagram */}
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Instagram"
-            className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-background hover:bg-primary transition-colors"
-          >
-            <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-          </a>
-
-          {/* Facebook */}
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Facebook"
-            className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-background hover:bg-primary transition-colors"
-          >
-            <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-          </a>
-
-          {/* Line / Message */}
-          <a
-            href="https://line.me"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Line"
-            className="grid h-7 w-7 place-items-center rounded-full bg-foreground text-background hover:bg-primary transition-colors"
-          >
-            <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
-            </svg>
-          </a>
-        </div>
-
-        <p className="border-l border-primary/40 pl-6 text-[10px] text-primary">
-          Study in Japan. Grow Your Future.
-        </p>
-      </footer>
+      {/* Shared Footer */}
+      <Footer />
 
       {/* Course Detail Interactive Modal */}
       {selectedCourseDetail && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div
-            className="fixed inset-0 bg-foreground/60 transition-opacity"
+            className="fixed inset-0 bg-foreground/60 transition-opacity menu-backdrop-enter"
             onClick={() => setSelectedCourseDetail(null)}
           />
           <div className="min-h-full flex items-center justify-center p-4">
-            <div className="relative w-full max-w-xl bg-background rounded-3xl shadow-lg border border-border p-6 sm:p-8 z-10 animate-fade-in my-8">
+            <div className="relative w-full max-w-xl bg-background rounded-3xl shadow-lg border border-border p-6 sm:p-8 z-10 menu-panel-enter my-8">
               <button
                 type="button"
                 onClick={() => setSelectedCourseDetail(null)}
