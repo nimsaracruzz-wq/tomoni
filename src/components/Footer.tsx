@@ -12,7 +12,7 @@ function Logo({ small }: { small?: boolean }) {
           small ? "h-10 w-10" : "h-12 w-12"
         } relative overflow-hidden rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm`}
       >
-        <svg aria-hidden="true" aria-hidden="true" viewBox="0 0 60 60" className="h-full w-full">
+        <svg aria-hidden="true" viewBox="0 0 60 60" className="h-full w-full">
           <path
             d="M8 42 L24 22 L30 26 L36 20 L52 42 Z"
             className="fill-primary-foreground"
