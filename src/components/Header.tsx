@@ -94,6 +94,7 @@ export default function Header({
     { label: "Home", href: "/", icon: Home },
     { label: "Courses", href: "/courses", icon: BookOpen },
     { label: "About Us", href: "/about", icon: Users },
+    { label: "Blog", href: "/blog", icon: BookOpen },
     { label: "Gallery", href: "/gallery", icon: Images },
     { label: "Register", href: "/register", icon: ClipboardCheck },
     { label: "Contact", href: "/contact", icon: Send },

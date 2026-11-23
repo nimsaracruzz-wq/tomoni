@@ -38,7 +38,10 @@ export default function Footer() {
     { label: "Home", href: "/" },
     { label: "Courses", href: "/courses" },
     { label: "About Us", href: "/about" },
+    { label: "Blog", href: "/blog" },
+    { label: "FAQ", href: "/faq" },
     { label: "Gallery", href: "/gallery" },
+    { label: "Register", href: "/register" },
     { label: "Contact", href: "/contact" },
   ];
 
@@ -49,7 +52,7 @@ export default function Footer() {
           <TomoniLogo size="sm" />
         </Link>
 
-        <nav className="flex flex-wrap gap-6 text-[11px] font-medium text-muted-foreground">
+        <nav className="flex flex-wrap gap-5 text-[11px] font-medium text-muted-foreground">
           {navLinks.map((n) => (
             <Link key={n.label} href={n.href} className="hover:text-primary transition-colors">
               {n.label}
