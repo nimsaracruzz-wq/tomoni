@@ -158,9 +158,18 @@ const detailedCourseCatalog: Record<string, CourseFullInfo> = {
   },
 };
 
+const defaultMainstreamCourses: BackendCourse[] = [
+  { id: "visa", name: "Japanese Visa + Class", active: 1 },
+  { id: "general", name: "General Class", active: 1 },
+  { id: "jft", name: "JFT Class", active: 1 },
+  { id: "ol", name: "O/L Class", active: 1 },
+  { id: "al", name: "A/L Class", active: 1 },
+  { id: "kids", name: "Kids Class", active: 1 },
+];
+
 export default function CoursesPage() {
   const [filter, setFilter] = useState<string>("all");
-  const [courses, setCourses] = useState<BackendCourse[]>([]);
+  const [courses, setCourses] = useState<BackendCourse[]>(defaultMainstreamCourses);
   const [intakes, setIntakes] = useState<Array<{ id: string; name: string }>>([]);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState("general");
@@ -171,8 +180,14 @@ export default function CoursesPage() {
       .then((res) => res.json())
       .then((data) => {
         if (!active) return;
-        if (data && Array.isArray(data.courses) && data.courses.length > 0) {
-          setCourses(data.courses.filter((c: BackendCourse) => c.active !== 0));
+        if (data && Array.isArray(data.categories) && data.categories.length > 0) {
+          setCourses(
+            data.categories.map((cat: { id: string; name: string }) => ({
+              id: cat.id,
+              name: cat.name,
+              active: 1,
+            }))
+          );
         }
         if (data && Array.isArray(data.intakes)) {
           setIntakes(data.intakes.filter((intake: { active?: number }) => intake.active !== 0));

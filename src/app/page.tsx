@@ -60,6 +60,17 @@ const courseDetailsMap: Record<string, CourseMetadata> = {
       "Zero prior knowledge required , absolute beginner friendly",
     ],
   },
+  jft: {
+    description: "Targeted preparation for JFT-Basic (A2) examination for candidates pursuing the Specified Skilled Worker (SSW / Tokutei Ginou) visa pathway to work in Japan.",
+    duration: "4–6 Months",
+    schedule: "Weekday Evening & Weekend Batches",
+    syllabus: [
+      "JFT-Basic A2 test components: Script, Vocabulary, Conversation & Listening",
+      "Computer-Based Testing (CBT) mock exam simulation and timed drills",
+      "Practical daily workplace Japanese for living in Japan",
+      "SSW skill evaluation test and Japanese interview readiness",
+    ],
+  },
   ol: {
     description: "Structured preparation aligned with the Sri Lankan Ministry of Education G.C.E. Ordinary Level Japanese curriculum.",
     duration: "6–10 Months",
@@ -110,6 +121,8 @@ function getCourseIcon(id: string) {
       return Plane;
     case "general":
       return BookOpen;
+    case "jft":
+      return Briefcase;
     case "ol":
     case "al":
       return GraduationCap;
@@ -156,19 +169,25 @@ export default function HomePage() {
     details: CourseMetadata;
   } | null>(null);
 
-  // Fetch courses directly from the SQLite Backend API
+  // Load mainstream educational tracks from categories
   useEffect(() => {
     let active = true;
     fetch("/api/public/config")
       .then((res) => res.json())
       .then((data) => {
         if (!active) return;
-        if (data && Array.isArray(data.courses) && data.courses.length > 0) {
-          setCourses(data.courses.filter((c: BackendCourse) => c.active !== 0));
+        if (data && Array.isArray(data.categories) && data.categories.length > 0) {
+          setCourses(
+            data.categories.map((cat: { id: string; name: string }) => ({
+              id: cat.id,
+              name: cat.name,
+              active: 1,
+            }))
+          );
         }
       })
       .catch((err) => {
-        console.warn("Could not load backend courses, using default list:", err);
+        console.warn("Could not load backend tracks, using default list:", err);
       });
     return () => {
       active = false;
