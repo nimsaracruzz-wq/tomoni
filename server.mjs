@@ -227,6 +227,19 @@ export function createServer(options = {}) {
           images: store.all("SELECT id,image_data,alt_text FROM gallery_images ORDER BY created_at DESC"),
         });
       }
+      if (route === "/api/public/blogs" && method === "GET") {
+        return json(200, {
+          posts: store.all(
+            "SELECT id, slug, title, summary, category, read_time, featured_image, author, meta_title, meta_description, published_at, updated_at FROM blog_posts WHERE is_published=1 ORDER BY published_at DESC",
+          ),
+        });
+      }
+      if (route.startsWith("/api/public/blogs/") && method === "GET") {
+        const slug = decodeURIComponent(route.slice("/api/public/blogs/".length));
+        const post = store.one("SELECT * FROM blog_posts WHERE slug=? AND is_published=1", slug);
+        if (!post) fail("Post not found.", 404);
+        return json(200, { post });
+      }
       if (route === "/api/public/config" && method === "GET") {
         limiter("form:" + ip, 40);
         store.run(
@@ -481,6 +494,155 @@ export function createServer(options = {}) {
           if (!store.one("SELECT id FROM gallery_images WHERE id=?", imageId)) fail("Gallery image not found.", 404);
           store.run("DELETE FROM gallery_images WHERE id=?", imageId);
           store.audit(actor, "Removed gallery image", "gallery_image", imageId);
+          return json(200, { ok: true });
+        }
+        if (route === "/api/admin/blogs" && method === "GET") {
+          need("records");
+          return json(200, {
+            posts: store.all(
+              "SELECT id, slug, title, summary, category, read_time, featured_image, author, meta_title, meta_description, keywords, canonical_url, is_published, published_at, created_at, updated_at FROM blog_posts ORDER BY published_at DESC",
+            ),
+          });
+        }
+        if (route.startsWith("/api/admin/blogs/") && method === "GET") {
+          need("records");
+          const blogId = route.slice("/api/admin/blogs/".length);
+          const post = store.one("SELECT * FROM blog_posts WHERE id=?", blogId);
+          if (!post) fail("Post not found.", 404);
+          return json(200, { post });
+        }
+        if (route === "/api/admin/blogs" && method === "POST") {
+          need("records");
+          const input = await body(req);
+          const title = String(input.title || "").trim();
+          if (!title) fail("Please provide a blog title.", 422);
+          let slug = String(input.slug || "")
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
+          if (!slug) {
+            slug = title
+              .toLowerCase()
+              .replace(/[^a-z0-9-]/g, "-")
+              .replace(/-+/g, "-")
+              .replace(/^-|-$/g, "")
+              .slice(0, 80);
+          }
+          if (store.one("SELECT id FROM blog_posts WHERE slug=?", slug)) {
+            slug = slug + "-" + Math.floor(Math.random() * 1000);
+          }
+          const content = String(input.content || "").trim();
+          if (!content) fail("Please provide article content.", 422);
+          const summary = String(input.summary || "").trim() || content.slice(0, 180);
+          const category = String(input.category || "Beginner Guide").trim();
+          const read_time = String(input.read_time || "5 min read").trim();
+          const featured_image = String(input.featured_image || "/assets/hero.jpg").trim();
+          const author = String(input.author || "Tomoni Academic Faculty").trim();
+          const meta_title = String(input.meta_title || "").trim() || title;
+          const meta_description = String(input.meta_description || "").trim() || summary.slice(0, 160);
+          const keywords = String(input.keywords || "").trim();
+          const canonical_url = String(input.canonical_url || "").trim();
+          const is_published = input.is_published ? 1 : 0;
+          const published_at = input.published_at ? new Date(input.published_at).toISOString() : now();
+          const blogId = id();
+
+          store.run(
+            `INSERT INTO blog_posts(
+              id, slug, title, summary, content, category, read_time, featured_image,
+              author, meta_title, meta_description, keywords, canonical_url, is_published,
+              published_at, created_at, updated_at
+            ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            blogId,
+            slug,
+            title,
+            summary,
+            content,
+            category,
+            read_time,
+            featured_image,
+            author,
+            meta_title,
+            meta_description,
+            keywords,
+            canonical_url,
+            is_published,
+            published_at,
+            now(),
+            now(),
+          );
+          store.audit(actor, "Created blog post: " + title, "blog_post", blogId);
+          return json(201, { ok: true, id: blogId, slug });
+        }
+        if (route.startsWith("/api/admin/blogs/") && method === "PUT") {
+          need("records");
+          const blogId = route.slice("/api/admin/blogs/".length);
+          const existing = store.one("SELECT * FROM blog_posts WHERE id=?", blogId);
+          if (!existing) fail("Post not found.", 404);
+          const input = await body(req);
+          const title = String(input.title ?? existing.title).trim();
+          if (!title) fail("Please provide a blog title.", 422);
+          let slug = String(input.slug ?? existing.slug)
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-|-$/g, "");
+          if (!slug) slug = existing.slug;
+          const slugConflict = store.one(
+            "SELECT id FROM blog_posts WHERE slug=? AND id!=?",
+            slug,
+            blogId,
+          );
+          if (slugConflict) fail("This slug is already used by another article.", 422);
+
+          const content = String(input.content ?? existing.content).trim();
+          const summary = String(input.summary ?? existing.summary).trim();
+          const category = String(input.category ?? existing.category).trim();
+          const read_time = String(input.read_time ?? existing.read_time).trim();
+          const featured_image = String(input.featured_image ?? existing.featured_image).trim();
+          const author = String(input.author ?? existing.author).trim();
+          const meta_title = String(input.meta_title ?? existing.meta_title).trim() || title;
+          const meta_description = String(input.meta_description ?? existing.meta_description).trim() || summary.slice(0, 160);
+          const keywords = String(input.keywords ?? existing.keywords).trim();
+          const canonical_url = String(input.canonical_url ?? existing.canonical_url).trim();
+          const is_published = input.is_published !== undefined ? (input.is_published ? 1 : 0) : existing.is_published;
+          const published_at = input.published_at ? new Date(input.published_at).toISOString() : existing.published_at;
+
+          store.run(
+            `UPDATE blog_posts SET
+              slug=?, title=?, summary=?, content=?, category=?, read_time=?,
+              featured_image=?, author=?, meta_title=?, meta_description=?,
+              keywords=?, canonical_url=?, is_published=?, published_at=?, updated_at=?
+            WHERE id=?`,
+            slug,
+            title,
+            summary,
+            content,
+            category,
+            read_time,
+            featured_image,
+            author,
+            meta_title,
+            meta_description,
+            keywords,
+            canonical_url,
+            is_published,
+            published_at,
+            now(),
+            blogId,
+          );
+          store.audit(actor, "Updated blog post: " + title, "blog_post", blogId);
+          return json(200, { ok: true, id: blogId, slug });
+        }
+        if (route.startsWith("/api/admin/blogs/") && method === "DELETE") {
+          need("records");
+          const blogId = route.slice("/api/admin/blogs/".length);
+          const existing = store.one("SELECT id, title FROM blog_posts WHERE id=?", blogId);
+          if (!existing) fail("Post not found.", 404);
+          store.run("DELETE FROM blog_posts WHERE id=?", blogId);
+          store.audit(actor, "Removed blog post: " + existing.title, "blog_post", blogId);
           return json(200, { ok: true });
         }
         if (route === "/api/admin/overview" && method === "GET") {

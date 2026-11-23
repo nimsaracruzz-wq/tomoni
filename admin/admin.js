@@ -595,6 +595,311 @@ async function galleryPage() {
     });
   });
 }
+
+async function blogsPage(params) {
+  const data = await api("/api/admin/blogs");
+  const posts = data.posts || [];
+  const search = (params?.get("search") || "").toLowerCase().trim();
+  const filtered = search
+    ? posts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(search) ||
+          p.slug.toLowerCase().includes(search) ||
+          p.category.toLowerCase().includes(search),
+      )
+    : posts;
+
+  const headActions =
+    '<a class="btn primary" href="#blog/new">' +
+    icon("plus") +
+    "New Article</a>";
+
+  let body = "";
+  if (posts.length) {
+    body =
+      '<div class="panel-head" style="gap:1rem;flex-wrap:wrap;">' +
+      '<form class="filters" style="margin:0;padding:0;background:none;border:none;" onsubmit="event.preventDefault();location.hash=\'blogs?search=\'+encodeURIComponent(this.search.value);">' +
+      '<label class="search-field" style="min-width:280px;">Search articles<input name="search" value="' +
+      h(search) +
+      '" placeholder="Filter by title, category, or slug..."></label>' +
+      '<button class="btn secondary" type="submit">Filter</button>' +
+      (search
+        ? '<a class="btn secondary" href="#blogs">Clear</a>'
+        : "") +
+      "</form>" +
+      "</div>" +
+      '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+      "<th>Article Title & Slug</th>" +
+      "<th>Category</th>" +
+      "<th>Author</th>" +
+      "<th>Status</th>" +
+      "<th>SEO Length</th>" +
+      "<th>Published Date</th>" +
+      '<th class="text-right">Actions</th>' +
+      "</tr></thead><tbody>";
+
+    if (!filtered.length) {
+      body +=
+        '<tr><td colspan="7" class="text-center" style="padding:2rem;">No articles match your search.</td></tr>';
+    } else {
+      filtered.forEach((p) => {
+        const isPub = p.is_published === 1;
+        const statusBadge = isPub
+          ? '<span class="badge accepted">Published</span>'
+          : '<span class="badge waitlisted">Draft</span>';
+        const seoLength = (p.meta_title || p.title).length;
+        const seoHealth =
+          seoLength >= 30 && seoLength <= 65
+            ? '<span class="badge accepted" title="Optimal SEO title length">' +
+              seoLength +
+              " chars</span>"
+            : '<span class="badge waitlisted" title="Needs optimization">' +
+              seoLength +
+              " chars</span>";
+
+        body +=
+          "<tr>" +
+          "<td>" +
+          '<strong><a href="#blog/edit/' +
+          p.id +
+          '" style="color:var(--text);text-decoration:none;">' +
+          h(p.title) +
+          "</a></strong>" +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' +
+          '<a href="/blog/' +
+          h(p.slug) +
+          '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;">/blog/' +
+          h(p.slug) +
+          " ↗</a>" +
+          "</div>" +
+          "</td>" +
+          "<td>" +
+          h(p.category || "General") +
+          "</td>" +
+          "<td>" +
+          h(p.author || "Tomoni Faculty") +
+          "</td>" +
+          "<td>" +
+          statusBadge +
+          "</td>" +
+          "<td>" +
+          seoHealth +
+          "</td>" +
+          "<td>" +
+          date(p.published_at) +
+          "</td>" +
+          '<td class="text-right" style="white-space:nowrap;">' +
+          '<a class="btn secondary small" href="#blog/edit/' +
+          p.id +
+          '">' +
+          icon("edit") +
+          "Edit</a> " +
+          '<button class="btn secondary small" data-action="toggle-pub-' +
+          p.id +
+          '">' +
+          (isPub ? "Unpublish" : "Publish") +
+          "</button> " +
+          '<button class="btn danger small" data-action="delete-blog-' +
+          p.id +
+          '">' +
+          icon("trash-2") +
+          "</button>" +
+          "</td>" +
+          "</tr>";
+
+        handlers["toggle-pub-" + p.id] = async () => {
+          await api("/api/admin/blogs/" + p.id, {
+            method: "PUT",
+            body: { is_published: isPub ? 0 : 1 },
+          });
+          toast(isPub ? "Article moved to drafts." : "Article published!");
+          render();
+        };
+
+        handlers["delete-blog-" + p.id] = () =>
+          confirmAction(
+            "Delete article",
+            'Are you sure you want to delete "' +
+              p.title +
+              '"? This will remove it from the public site.',
+            async () => {
+              await api("/api/admin/blogs/" + p.id, {
+                method: "DELETE",
+                body: {},
+              });
+              toast("Article deleted.");
+              render();
+            },
+          );
+      });
+    }
+    body += "</tbody></table></div>";
+  } else {
+    body = empty(
+      "No blog posts yet",
+      "Write your first article to share Japanese learning tips and boost Google search ranking.",
+      "book-open",
+    );
+  }
+
+  $("#main").innerHTML =
+    heading(
+      "PUBLIC WEBSITE",
+      "Blog & SEO Articles",
+      "Manage blog posts, educational guides, and search metadata to attract students searching Google.",
+      headActions,
+    ) +
+    '<section class="panel">' +
+    body +
+    "</section>";
+}
+
+async function blogEditPage(id) {
+  let post = {
+    title: "",
+    slug: "",
+    category: "Beginner Guide",
+    read_time: "5 min read",
+    author: "Tomoni Academic Faculty",
+    featured_image: "/assets/hero.jpg",
+    is_published: 1,
+    summary: "",
+    content: "",
+    meta_title: "",
+    meta_description: "",
+    keywords: "Japanese Language Classes in Sri Lanka, JLPT, Learn Japanese",
+    canonical_url: "",
+  };
+
+  const isEdit = !!id;
+  if (isEdit) {
+    const res = await api("/api/admin/blogs/" + id);
+    post = res.post;
+  }
+
+  const categoryOptions = [
+    "Beginner Guide",
+    "Exam Preparation",
+    "Career & Education",
+    "Living in Japan",
+    "School Syllabus",
+    "Japanese Grammar & Kanji",
+    "Visa & Immigration",
+  ];
+
+  $("#main").innerHTML =
+    heading(
+      "BLOG & SEO",
+      isEdit ? "Edit Article" : "New Article",
+      isEdit
+        ? 'Editing "' + h(post.title) + '"'
+        : "Create an educational guide and optimize its Google Search ranking.",
+      '<a class="btn secondary" href="#blogs">' +
+        icon("arrow-left") +
+        "Back to Articles</a>",
+    ) +
+    '<form class="form-grid" data-handler="save-blog" style="gap:1.5rem;">' +
+    // Panel 1: Content
+    '<section class="panel full"><div class="panel-head"><h2>Article Details</h2></div>' +
+    '<div class="form-grid" style="padding:1.5rem;">' +
+    field("title", "Article Title", post.title, "text", true) +
+    field("slug", "URL Slug (e.g. how-to-learn-japanese)", post.slug, "text", false) +
+    '<label>Category<select name="category">' +
+    categoryOptions
+      .map(
+        (c) =>
+          '<option value="' +
+          h(c) +
+          '" ' +
+          (post.category === c ? "selected" : "") +
+          ">" +
+          h(c) +
+          "</option>",
+      )
+      .join("") +
+    "</select></label>" +
+    field("read_time", "Estimated Read Time", post.read_time, "text", false) +
+    field("author", "Author Name", post.author, "text", false) +
+    field("featured_image", "Featured Image Path / URL", post.featured_image, "text", false) +
+    '<label class="full" style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;margin-top:0.5rem;">' +
+    '<input type="checkbox" name="is_published" value="1" ' +
+    (post.is_published ? "checked" : "") +
+    ' style="width:auto;">' +
+    "<span><strong>Publish Article Immediately</strong> (Uncheck to save as draft)</span>" +
+    "</label>" +
+    textarea("summary", "Summary / Lead Excerpt", post.summary, 3, true) +
+    textarea("content", "Full Article Content (paragraphs separated by blank lines)", post.content, 14, true) +
+    "</div></section>" +
+    // Panel 2: SEO Settings
+    '<section class="panel full"><div class="panel-head"><h2>Search Engine Optimization (SEO) & Google Preview</h2></div>' +
+    '<div class="form-grid" style="padding:1.5rem;">' +
+    field("meta_title", "Google Meta Title (Ideal: 50–60 characters)", post.meta_title, "text", false) +
+    field("keywords", "Focus Keywords (comma-separated)", post.keywords, "text", false) +
+    textarea("meta_description", "Meta Description for Search Engines (Ideal: 120–160 characters)", post.meta_description, 3, false) +
+    field("canonical_url", "Custom Canonical URL (Leave blank to use default)", post.canonical_url, "url", false) +
+    // Live Google SERP Preview Box
+    '<div class="full serp-preview-box">' +
+    '<div class="serp-preview-header">Live Google Search Snippet Preview</div>' +
+    '<div class="serp-preview-card">' +
+    '<div class="serp-url">https://tomoniedu.com <span>› blog › <span id="preview-slug">' +
+    h(post.slug || "your-slug") +
+    "</span></span></div>" +
+    '<div id="preview-title" class="serp-title">' +
+    h(post.meta_title || post.title || "Your SEO Title Goes Here") +
+    "</div>" +
+    '<div id="preview-desc" class="serp-desc">' +
+    h(post.meta_description || post.summary || "Your meta description preview will appear here...") +
+    "</div>" +
+    "</div>" +
+    "</div>" +
+    "</div></section>" +
+    // Bottom Action Buttons
+    '<div class="full" style="display:flex;gap:1rem;align-items:center;">' +
+    '<button class="btn primary" type="submit">' +
+    (isEdit ? "Update Article & SEO" : "Publish Article") +
+    "</button>" +
+    '<a class="btn secondary" href="#blogs">Cancel</a>' +
+    "</div>" +
+    "</form>";
+
+  const form = $('[data-handler="save-blog"]');
+  if (form) {
+    const updatePreview = () => {
+      const titleVal = form.elements.meta_title.value || form.elements.title.value || "Your SEO Title Goes Here";
+      const descVal = form.elements.meta_description.value || form.elements.summary.value || "Your meta description preview will appear here...";
+      const slugVal = form.elements.slug.value || "your-slug";
+      const pt = $("#preview-title");
+      const pd = $("#preview-desc");
+      const ps = $("#preview-slug");
+      if (pt) pt.textContent = titleVal;
+      if (pd) pd.textContent = descVal;
+      if (ps) ps.textContent = slugVal;
+    };
+    form.elements.title.addEventListener("input", updatePreview);
+    form.elements.meta_title.addEventListener("input", updatePreview);
+    form.elements.summary.addEventListener("input", updatePreview);
+    form.elements.meta_description.addEventListener("input", updatePreview);
+    form.elements.slug.addEventListener("input", updatePreview);
+  }
+
+  forms["save-blog"] = async (form, input) => {
+    input.is_published = form.elements.is_published.checked ? 1 : 0;
+    if (isEdit) {
+      await api("/api/admin/blogs/" + id, {
+        method: "PUT",
+        body: input,
+      });
+      toast("Article and SEO updated successfully.");
+    } else {
+      await api("/api/admin/blogs", {
+        method: "POST",
+        body: input,
+      });
+      toast("New article created successfully.");
+    }
+    location.hash = "#blogs";
+  };
+}
 function filtersHtml(params, students = false) {
   const c = state.catalog;
   return (
@@ -2621,6 +2926,7 @@ function drawNav(route) {
     ["overview", "Overview", "layout-dashboard", "records"],
     ["registrations", "Registrations", "clipboard-list", "records"],
     ["students", "Students", "users", "records"],
+    ["blogs", "Blog & SEO", "book-open", "records"],
     ["gallery", "Gallery", "images", "records"],
     ["email", "Email Center", "mail", "email"],
     ["templates", "Templates", "files", "email"],
@@ -2637,6 +2943,7 @@ function drawNav(route) {
       ([key, label, ic]) =>
         '<a class="nav-item ' +
         (route === key ||
+        (key === "blogs" && route === "blog") ||
         (key === "registrations" && route === "registration") ||
         (key === "students" && route === "student")
           ? "active"
@@ -2655,7 +2962,9 @@ function drawNav(route) {
       ? "Applicant profile"
       : route === "student"
         ? "Student profile"
-        : "Workspace");
+        : route === "blog"
+          ? "Article & SEO editor"
+          : "Workspace");
 }
 async function render() {
   const version = ++routeVersion;
@@ -2680,6 +2989,8 @@ async function render() {
         "registration",
         "students",
         "student",
+        "blogs",
+        "blog",
       ].includes(route) &&
       !can("records")
     )
@@ -2691,6 +3002,9 @@ async function render() {
     if (route === "overview") await overviewPage();
     else if (route === "registrations") await recordsPage(params);
     else if (route === "students") await recordsPage(params, true);
+    else if (route === "blogs") await blogsPage(params);
+    else if (route === "blog" && parts[1] === "new") await blogEditPage(null);
+    else if (route === "blog" && parts[1] === "edit") await blogEditPage(parts[2]);
     else if (route === "gallery") await galleryPage();
     else if (route === "registration") await profilePage(parts[1]);
     else if (route === "student") await profilePage(parts[1], true);

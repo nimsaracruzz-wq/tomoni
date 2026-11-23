@@ -1,10 +1,11 @@
 import { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/seo";
 import { COURSE_CATALOG } from "@/data/courses-data";
-import { BLOG_POSTS } from "@/data/blog-posts";
+import { getPublicBlogPosts } from "@/lib/blogs";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const posts = await getPublicBlogPosts();
 
   // Core static pages
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -67,7 +68,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Blog articles
-  const blogRoutes: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+  const blogRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${SITE_URL}/blog/${post.slug}`,
     lastModified: new Date(post.updatedDate || post.publishedDate),
     changeFrequency: "monthly",

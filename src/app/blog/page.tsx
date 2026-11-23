@@ -4,7 +4,7 @@ import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ReadyCtaBanner from "@/components/ReadyCtaBanner";
-import { BLOG_POSTS } from "@/data/blog-posts";
+import { getPublicBlogPosts } from "@/lib/blogs";
 import { SITE_URL } from "@/lib/seo";
 import { JsonLd, getBreadcrumbSchema } from "@/lib/schema";
 import { BookOpen, Calendar, Clock, ArrowRight, User } from "lucide-react";
@@ -26,7 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BlogIndexPage() {
+export default async function BlogIndexPage() {
+  const posts = await getPublicBlogPosts();
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Blog", url: "/blog" },
@@ -58,7 +59,7 @@ export default function BlogIndexPage() {
         <section className="py-12 sm:py-16">
           <div className="mx-auto max-w-6xl px-5">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {BLOG_POSTS.map((post) => (
+              {posts.map((post) => (
                 <article
                   key={post.slug}
                   className="group flex flex-col rounded-3xl border border-border bg-card overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 hover:border-primary/40"

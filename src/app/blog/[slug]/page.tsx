@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import ReadyCtaBanner from "@/components/ReadyCtaBanner";
 import { BLOG_POSTS, BlogPost } from "@/data/blog-posts";
 import { COURSE_CATALOG } from "@/data/courses-data";
+import { getPublicBlogPosts, getPublicBlogPostBySlug } from "@/lib/blogs";
 import { SITE_URL, SITE_NAME } from "@/lib/seo";
 import { JsonLd, getArticleSchema, getBreadcrumbSchema } from "@/lib/schema";
 import {
@@ -25,14 +26,15 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return BLOG_POSTS.map((post) => ({
+  const posts = await getPublicBlogPosts();
+  return posts.map((post) => ({
     slug: post.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const post = await getPublicBlogPostBySlug(slug);
   if (!post) return {};
 
   return {
@@ -69,12 +71,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const post = await getPublicBlogPostBySlug(slug);
 
   if (!post) {
     notFound();
   }
 
+  const allPosts = await getPublicBlogPosts();
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Blog", url: "/blog" },
@@ -82,7 +85,7 @@ export default async function BlogPostPage({ params }: Props) {
   ];
 
   const relatedCourse = post.relatedCourseSlug ? COURSE_CATALOG[post.relatedCourseSlug] : null;
-  const otherPosts = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const otherPosts = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
