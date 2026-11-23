@@ -172,7 +172,10 @@ export function createServer(options = {}) {
       "Content-Security-Policy",
       "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'",
     );
-    if (production)
+    const isHttps =
+      (req.headers["x-forwarded-proto"] || "").includes("https") ||
+      Boolean(config.baseUrl && config.baseUrl.startsWith("https://"));
+    if (isHttps)
       res.setHeader("Strict-Transport-Security", "max-age=31536000");
     const json = (status, value) => {
       res.writeHead(status, {
@@ -337,8 +340,8 @@ export function createServer(options = {}) {
           "Set-Cookie",
           "tomoni_session=" +
             token +
-            "; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800" +
-            (production ? "; Secure" : ""),
+            "; HttpOnly; SameSite=Lax; Path=/; Max-Age=28800" +
+            (isHttps ? "; Secure" : ""),
         );
         store.audit(user, "Signed in", "user", user.id);
         return json(200, { ok: true });
@@ -421,8 +424,8 @@ export function createServer(options = {}) {
           );
           res.setHeader(
             "Set-Cookie",
-            "tomoni_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0" +
-              (production ? "; Secure" : ""),
+            "tomoni_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0" +
+              (isHttps ? "; Secure" : ""),
           );
           return json(200, { ok: true });
         }
