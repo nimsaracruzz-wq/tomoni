@@ -263,6 +263,10 @@ export default function Header({
               <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>071 491 9354 · 070 270 7624</span>
             </div>
+            <div className="flex items-center gap-2.5">
+              <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span>Japan: +81 90-3841-0745 (Call / WA)</span>
+            </div>
           </div>
         </div>
       </div>

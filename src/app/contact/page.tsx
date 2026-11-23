@@ -89,10 +89,17 @@ export default function ContactPage() {
     },
     {
       icon: Phone,
-      title: "Phone & WhatsApp",
+      title: "Sri Lanka Contact",
       primary: "071 491 9354",
       secondary: "070 270 7624 (WhatsApp)",
-      hint: "Call or message us for course information",
+      hint: "Call or message our Kuliyapitiya office",
+    },
+    {
+      icon: Phone,
+      title: "Japan Direct Contact",
+      primary: "+81 90-3841-0745",
+      secondary: "WhatsApp & Direct Call",
+      hint: "Direct line for Japan inquiries & visa advisory",
     },
     {
       icon: Mail,
@@ -155,22 +162,38 @@ export default function ContactPage() {
                   Have questions about JLPT N5/N4, O/L and A/L classes, Kids Japanese, or student visas? Contact our friendly advisors or visit our Kuliyapitiya institute for guidance.
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 pt-2">
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <a
+                    href="https://wa.me/819038410745"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors"
+                  >
+                    <span>WhatsApp Japan: +81 90-3841-0745</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </a>
                   <a
                     href="https://wa.me/94702707624"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-green-600 hover:bg-green-700 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors"
+                    className="inline-flex items-center gap-2 rounded-full bg-green-600 hover:bg-green-700 px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors"
                   >
-                    <span>Message on WhatsApp</span>
+                    <span>WhatsApp SL: 070 270 7624</span>
                     <ChevronRight className="h-4 w-4" />
                   </a>
                   <a
-                    href="tel:+94714919354"
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                    href="tel:+819038410745"
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                   >
                     <Phone className="h-4 w-4 text-primary" />
-                    <span>Call 071 491 9354</span>
+                    <span>Call Japan (+81 90-3841-0745)</span>
+                  </a>
+                  <a
+                    href="tel:+94714919354"
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span>Call SL (071 491 9354)</span>
                   </a>
                 </div>
               </div>
@@ -413,7 +436,10 @@ export default function ContactPage() {
                       <strong>Address:</strong> No. 355 A 1/1 Hettipola Road, Kuliyapitiya.
                     </p>
                     <p>
-                      <strong>Phone:</strong> 071 491 9354 or 070 270 7624.
+                      <strong>Sri Lanka:</strong> 071 491 9354 or 070 270 7624 (WhatsApp)
+                    </p>
+                    <p>
+                      <strong>Japan:</strong> +81 90-3841-0745 (Call & WhatsApp)
                     </p>
                     <p>
                       <strong>Website:</strong> tomoniedu.com

@@ -33,7 +33,7 @@ export default function FAQAccordion() {
     },
     {
       q: "How can I contact the institute or visit the Kuliyapitiya center?",
-      a: "Submit an inquiry through this website, email tomoniinstitute@gmail.com, call 071 491 9354 or 070 270 7624, or visit No. 355 A 1/1 Hettipola Road, Kuliyapitiya.",
+      a: "Submit an inquiry through this website, email tomoniinstitute@gmail.com, call 071 491 9354 or 070 270 7624, contact our Japan line at +81 90-3841-0745 (Call & WhatsApp), or visit No. 355 A 1/1 Hettipola Road, Kuliyapitiya.",
     },
   ];
 

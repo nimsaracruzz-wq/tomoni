@@ -114,6 +114,7 @@ export default function Footer() {
 
         <p className="border-l border-primary/40 pl-6 text-[11px] text-primary">
           071 491 9354 · 070 270 7624<br />
+          Japan: <a href="tel:+819038410745" className="hover:underline">+81 90-3841-0745</a> (Call / WhatsApp)<br />
           <a href="mailto:tomoniinstitute@gmail.com" className="hover:underline">tomoniinstitute@gmail.com</a><br />
           <a href="https://tomoniedu.com" target="_blank" rel="noreferrer" className="hover:underline">tomoniedu.com</a><br />
           No. 355 A 1/1 Hettipola Road, Kuliyapitiya
