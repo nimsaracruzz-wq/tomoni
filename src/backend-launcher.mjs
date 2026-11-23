@@ -17,6 +17,8 @@ export async function startBackendServer() {
       dbPath: path.resolve(process.cwd(), "data/tomoni.sqlite"),
       baseUrl: process.env.PUBLIC_URL || "http://127.0.0.1:3000",
       production: process.env.NODE_ENV === "production",
+      encryptionKey: process.env.SMTP_ENCRYPTION_KEY,
+      allowSend: process.env.ALLOW_EMAIL_SEND === "true",
     });
 
     await new Promise((resolve, reject) => {

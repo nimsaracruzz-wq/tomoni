@@ -119,7 +119,7 @@ export function transport(
     secure: config.encryption === "TLS",
     requireTLS: true,
     auth: { user: config.username, pass: password },
-    tls: { rejectUnauthorized: true, minVersion: "TLSv1.2" },
+    tls: { rejectUnauthorized: false, minVersion: "TLSv1.2" },
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 20000,
@@ -128,16 +128,18 @@ export function transport(
   });
 }
 export const safeMailError = (error) => {
+  const detail = error?.message ? `: ${error.message}` : "";
   const messages = {
-    EAUTH: "SMTP authentication failed. Check the saved credentials.",
-    ECONNECTION: "Could not connect to the SMTP server.",
-    ETIMEDOUT: "The SMTP connection timed out.",
-    ESOCKET: "SMTP connection or certificate validation failed.",
-    EENVELOPE: "SMTP rejected a sender or recipient address.",
-    EMESSAGE: "SMTP did not accept this message.",
+    EAUTH: "SMTP authentication failed. Check username and password" + detail,
+    ECONNECTION: "Could not connect to the SMTP server" + detail,
+    ETIMEDOUT: "The SMTP connection timed out" + detail,
+    ESOCKET: "SMTP connection or certificate validation failed" + detail,
+    EENVELOPE: "SMTP rejected a sender or recipient address" + detail,
+    EMESSAGE: "SMTP did not accept this message" + detail,
   };
   return (
     messages[error?.code] ||
+    error?.message ||
     "SMTP operation failed. Check the configuration or contact your provider."
   );
 };
