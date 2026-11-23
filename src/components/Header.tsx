@@ -88,7 +88,11 @@ export default function Header({
         }`}
       >
         <div className="mx-auto max-w-6xl px-5">
-          <div className="flex items-center justify-between py-4">
+          <div
+            className={`flex items-center justify-between transition-all duration-200 ${
+              isScrolled ? "py-2.5 sm:py-3" : "py-3 sm:py-4"
+            }`}
+          >
             {/* Logo */}
             <Link href="/" className="focus:outline-none group">
               <TomoniLogo size="md" className="transition-transform group-hover:scale-[1.02]" />
@@ -174,13 +178,13 @@ export default function Header({
 
         {/* Drawer Panel */}
         <div
-          className={`fixed inset-y-0 right-0 w-full max-w-sm bg-background border-l border-border p-6 shadow-lg flex flex-col justify-between z-10 overflow-y-auto transition-transform duration-300 ease-out ${
+          className={`fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm h-[100dvh] max-h-[100dvh] bg-background border-l border-border p-5 sm:p-6 shadow-2xl flex flex-col justify-between z-10 overflow-y-auto overscroll-contain transition-transform duration-300 ease-out ${
             mobileMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div>
+          <div className="space-y-4">
             {/* Header inside drawer */}
-            <div className="flex items-center justify-between pb-5 border-b border-border">
+            <div className="flex items-center justify-between pb-3.5 border-b border-border">
               <div className="flex items-center gap-3">
                 <TomoniLogo size="sm" />
               </div>
@@ -188,15 +192,15 @@ export default function Header({
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors"
+                className="grid h-8 w-8 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors"
                 aria-label="Close menu"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* Navigation Items */}
-            <nav className="py-6 space-y-1.5" aria-label="Mobile Navigation">
+            <nav className="space-y-1" aria-label="Mobile Navigation">
               {navLinks.map((n, i) => {
                 const isActive = pathname === n.href;
                 const Icon = n.icon;
@@ -205,25 +209,25 @@ export default function Header({
                     key={n.label}
                     href={n.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-2xl px-4 py-3.5 text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? "bg-accent text-primary font-bold shadow-xs"
                         : "text-foreground hover:bg-muted"
                     }`}
-                    style={{ transitionDelay: mobileMenuOpen ? `${50 + i * 30}ms` : "0ms" }}
+                    style={{ transitionDelay: mobileMenuOpen ? `${30 + i * 20}ms` : "0ms" }}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                       <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                       <span>{n.label}</span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-primary" />
+                    <ChevronRight className="h-3.5 w-3.5 text-primary" />
                   </Link>
                 );
               })}
             </nav>
 
             {/* Call to Action Button */}
-            <div className="pt-2">
+            <div className="pt-1">
               {handleAction ? (
                 <button
                   type="button"
@@ -231,7 +235,7 @@ export default function Header({
                     setMobileMenuOpen(false);
                     handleAction();
                   }}
-                  className="flex w-full items-center justify-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-xs font-semibold text-primary-foreground shadow-md hover:opacity-95 transition-colors"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:opacity-95 transition-colors"
                 >
                   <span>Get Consultation</span>
                   <ChevronRight className="h-4 w-4" />
@@ -240,7 +244,7 @@ export default function Header({
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex w-full items-center justify-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-xs font-semibold text-primary-foreground shadow-md hover:opacity-95 transition-colors"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:opacity-95 transition-colors"
                 >
                   <span>Get Consultation</span>
                   <ChevronRight className="h-4 w-4" />
@@ -250,22 +254,22 @@ export default function Header({
           </div>
 
           {/* Bottom Contact Details in Mobile Menu */}
-          <div className="pt-6 border-t border-border mt-8 space-y-2.5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2.5">
-              <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>No. 355 A 1/1 Hettipola Road, Kuliyapitiya</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>tomoniinstitute@gmail.com</span>
-            </div>
-            <div className="flex items-center gap-2.5">
+          <div className="pt-3 border-t border-border mt-3 space-y-1.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2">
               <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>071 491 9354 · 070 270 7624</span>
             </div>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
               <span>Japan: +81 90-3841-0745 (Call / WA)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span className="truncate">tomoniinstitute@gmail.com</span>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground/80">
+              <MapPin className="h-3 w-3 text-primary shrink-0" />
+              <span className="truncate">Kuliyapitiya, Sri Lanka</span>
             </div>
           </div>
         </div>
