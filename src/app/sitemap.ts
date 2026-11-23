@@ -3,9 +3,9 @@ import { SITE_URL } from "@/lib/seo";
 import { COURSE_CATALOG } from "@/data/courses-data";
 import { getPublicBlogPosts } from "@/lib/blogs";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const posts = await getPublicBlogPosts();
+  const posts = getPublicBlogPosts();
 
   // Core static pages
   const staticRoutes: MetadataRoute.Sitemap = [

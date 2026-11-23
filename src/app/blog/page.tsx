@@ -26,8 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function BlogIndexPage() {
-  const posts = await getPublicBlogPosts();
+export default function BlogIndexPage() {
+  const posts = getPublicBlogPosts();
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Blog", url: "/blog" },
