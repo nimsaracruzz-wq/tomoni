@@ -98,6 +98,7 @@ const courseDetailsMap: Record<string, CourseMetadata> = {
 const defaultCourses: BackendCourse[] = [
   { id: "visa", name: "Japanese Visa + Class", active: 1 },
   { id: "general", name: "General Class", active: 1 },
+  { id: "jft", name: "JFT Class", active: 1 },
   { id: "ol", name: "O/L Class", active: 1 },
   { id: "al", name: "A/L Class", active: 1 },
   { id: "kids", name: "Kids Class", active: 1 },

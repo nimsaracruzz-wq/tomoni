@@ -233,6 +233,7 @@ export default function ApplicationModal({
                           : [
                               { id: "visa", name: "Japanese Visa + Class (Study in Japan Pathway)" },
                               { id: "general", name: "General Class (Practical Japanese for Adults)" },
+                              { id: "jft", name: "JFT Class (Japan Foundation Test / SSW Worker)" },
                               { id: "ol", name: "O/L Class (Sri Lankan Ordinary Level Support)" },
                               { id: "al", name: "A/L Class (Sri Lankan Advanced Level Support)" },
                               { id: "kids", name: "Kids Class (Japanese for Young Learners)" },

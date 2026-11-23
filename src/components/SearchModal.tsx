@@ -28,6 +28,7 @@ export default function SearchModal({ isOpen, onClose, onOpenApply }: SearchModa
   const quickLinks = [
     { title: "Japanese Visa + Class , Study in Japan Track", category: "Courses", href: "#courses", icon: BookOpen },
     { title: "General Class , Practical Japanese for Adults", category: "Courses", href: "#courses", icon: BookOpen },
+    { title: "JFT Class , Japan Foundation Test / SSW Worker Pathway", category: "Courses", href: "#courses", icon: BookOpen },
     { title: "O/L Class , Sri Lankan Ordinary Level Support", category: "Courses", href: "#courses", icon: BookOpen },
     { title: "A/L Class , Sri Lankan Advanced Level Support", category: "Courses", href: "#courses", icon: BookOpen },
     { title: "Kids Class , Japanese for Young Learners", category: "Courses", href: "#courses", icon: BookOpen },

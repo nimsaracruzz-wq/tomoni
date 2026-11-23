@@ -80,6 +80,25 @@ const detailedCourseCatalog: Record<string, CourseFullInfo> = {
     ],
     intakeDates: "Monthly enrollment cohorts",
   },
+  jft: {
+    id: "jft",
+    name: "JFT Class",
+    category: "career",
+    badge: "SSW & Working Visa",
+    level: "Japan Foundation Test for Basic Japanese (A2 Level)",
+    duration: "4–6 Months Intensive",
+    schedule: "Weekday Evening & Weekend Batches",
+    mode: "Kuliyapitiya Center / Online Nationwide",
+    description:
+      "Targeted preparation for the JFT-Basic (Japan Foundation Test for Basic Japanese) examination, specifically tailored for candidates pursuing the Specified Skilled Worker (SSW / Tokutei Ginou) visa pathway to work in Japan.",
+    highlights: [
+      "Targeted training for JFT-Basic A2 test components: Script, Vocabulary, Conversation, and Listening",
+      "Computer-Based Testing (CBT) mock exam simulation and time management drills",
+      "Practical daily-life Japanese required for working and living in Japan",
+      "Guidance on SSW skill test preparation and Japanese employer interview readiness",
+    ],
+    intakeDates: "Continuous cohorts aligning with JFT testing windows",
+  },
   ol: {
     id: "ol",
     name: "O/L Class",

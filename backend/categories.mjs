@@ -1,8 +1,9 @@
 export const CATEGORIES = [
   { id: "visa", name: "Japanese Visa + Class", code: null },
+  { id: "general", name: "General Class", code: "GN" },
+  { id: "jft", name: "JFT Class", code: "JF" },
   { id: "ol", name: "O/L Class", code: "OL" },
   { id: "al", name: "A/L Class", code: "AL" },
-  { id: "general", name: "General Class", code: "GN" },
   { id: "kids", name: "Kids Class", code: "KD" },
 ];
 export const categoryName = (value) =>

@@ -59,6 +59,25 @@ export const coursesData: CourseData[] = [
     ],
   },
   {
+    level: "jft",
+    badge: "SSW & Working Visa",
+    title: "JFT Class",
+    subTitle: "Japan Foundation Test for Basic Japanese (A2) / SSW Worker Pathway",
+    duration: "4–6 months",
+    schedule: "Weekday Evening & Weekend Batches",
+    target: "Candidates preparing for Specified Skilled Worker (SSW / Tokutei Ginou) employment in Japan",
+    jlptTarget: "Target: JFT-Basic A2 Level (Computer-Based Test)",
+    description:
+      "Specialized training for the JFT-Basic examination required for the Japanese Specified Skilled Worker (SSW) visa. Features focused drills on listening, daily conversation, work scenarios, and CBT computer test simulations.",
+    image: "/images/course-n5.jpg",
+    highlights: [
+      "Targeted preparation for all 4 test sections: Script, Vocabulary, Conversation & Listening",
+      "Computer-Based Testing (CBT) practice drills and real-time timed test simulations",
+      "Essential Japanese communication for living and working independently in Japan",
+      "Guidance on skill evaluation test prep and Japanese workplace interview readiness",
+    ],
+  },
+  {
     level: "ol",
     badge: "National Syllabus",
     title: "O/L Class",
