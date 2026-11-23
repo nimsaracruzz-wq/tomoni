@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import TomoniLogo from "@/components/TomoniLogo";
@@ -32,27 +32,47 @@ export default function Header({
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
+  /* ── Scroll detection ── */
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* ── Lock body scroll when drawer is open (iOS-safe) ── */
   useEffect(() => {
     if (mobileMenuOpen) {
+      // Save current scroll position and lock
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
       document.body.style.overflow = "hidden";
     } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
       document.body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
     }
     return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
       document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
 
-  // Close on Escape
+  /* ── Close on Escape key ── */
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -62,11 +82,12 @@ export default function Header({
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileMenuOpen]);
 
-  // Close menu on route change
+  /* ── Close on route change ── */
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  const close = () => setMobileMenuOpen(false);
   const handleAction = onOpenConsultation || onOpenApply;
 
   const navLinks = [
@@ -80,6 +101,9 @@ export default function Header({
 
   return (
     <>
+      {/* ════════════════════════════════════
+          HEADER BAR
+      ════════════════════════════════════ */}
       <header
         className={`sticky top-0 z-40 w-full backdrop-blur-md transition-all duration-300 ${
           isScrolled
@@ -87,18 +111,18 @@ export default function Header({
             : "bg-background/80"
         }`}
       >
-        <div className="mx-auto max-w-6xl px-5">
+        <div className="mx-auto max-w-6xl px-4 sm:px-5">
           <div
             className={`flex items-center justify-between transition-all duration-200 ${
-              isScrolled ? "py-2.5 sm:py-3" : "py-3 sm:py-4"
+              isScrolled ? "py-2 sm:py-3" : "py-3 sm:py-4"
             }`}
           >
             {/* Logo */}
-            <Link href="/" className="focus:outline-none group">
+            <Link href="/" className="focus:outline-none group shrink-0">
               <TomoniLogo size="md" className="transition-transform group-hover:scale-[1.02]" />
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop nav */}
             <nav className="hidden gap-7 text-xs font-medium lg:flex items-center" aria-label="Main Navigation">
               {navLinks.map((n) => {
                 const isActive = pathname === n.href;
@@ -118,7 +142,7 @@ export default function Header({
               })}
             </nav>
 
-            {/* Desktop Right CTA — only visible at lg+ alongside desktop nav */}
+            {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-3">
               {handleAction ? (
                 <button
@@ -144,133 +168,143 @@ export default function Header({
               )}
             </div>
 
-            {/* Mobile Menu Hamburger Button */}
+            {/* Hamburger button */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen((v) => !v)}
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
-              className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground lg:hidden shadow-sm hover:opacity-90 transition-all focus:outline-none"
+              aria-controls="mobile-drawer"
+              className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground lg:hidden shadow-sm hover:opacity-90 transition-opacity focus:outline-none shrink-0"
             >
-              <span className="relative h-5 w-5">
-                <Menu className={`h-5 w-5 absolute inset-0 transition-all duration-300 ${mobileMenuOpen ? "opacity-0 rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"}`} />
-                <X className={`h-5 w-5 absolute inset-0 transition-all duration-300 ${mobileMenuOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-75"}`} />
-              </span>
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer Overlay — always in DOM, animated via CSS */}
+      {/* ════════════════════════════════════
+          MOBILE DRAWER  (portal-like, fixed)
+      ════════════════════════════════════ */}
+
+      {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
-          mobileMenuOpen ? "visible" : "invisible pointer-events-none"
+        aria-hidden="true"
+        onClick={close}
+        className={`fixed inset-0 z-[60] bg-black/60 transition-opacity duration-300 lg:hidden ${
+          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
-        aria-hidden={!mobileMenuOpen}
+      />
+
+      {/* Drawer panel — slides in from right */}
+      <div
+        id="mobile-drawer"
+        ref={drawerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        className={`fixed top-0 right-0 z-[70] h-screen w-[min(320px,100vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden transition-transform duration-300 ease-out ${
+          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+        /* Prevent touch-scroll from escaping the drawer on iOS */
+        onTouchMove={(e) => e.stopPropagation()}
       >
-        {/* Backdrop */}
-        <div
-          className={`fixed inset-0 bg-foreground/60 transition-opacity duration-300 ${
-            mobileMenuOpen ? "opacity-100" : "opacity-0"
-          }`}
-          onClick={() => setMobileMenuOpen(false)}
-        />
+        {/* ── Top: logo + close ── */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+          <TomoniLogo size="sm" />
+          <button
+            type="button"
+            onClick={close}
+            aria-label="Close menu"
+            className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-        {/* Drawer Panel */}
-        <div
-          className={`fixed inset-y-0 right-0 w-full max-w-xs sm:max-w-sm h-[100dvh] max-h-[100dvh] bg-background border-l border-border p-5 sm:p-6 shadow-2xl flex flex-col justify-between z-10 overflow-y-auto overscroll-contain transition-transform duration-300 ease-out ${
-            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        {/* ── Middle: nav links — scrollable if needed ── */}
+        <nav
+          className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1"
+          aria-label="Mobile Navigation"
         >
-          <div className="space-y-4">
-            {/* Header inside drawer */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-border">
-              <div className="flex items-center gap-3">
-                <TomoniLogo size="sm" />
-              </div>
+          {navLinks.map((n, i) => {
+            const isActive = pathname === n.href;
+            const Icon = n.icon;
+            return (
+              <Link
+                key={n.label}
+                href={n.href}
+                onClick={close}
+                className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-foreground hover:bg-muted"
+                }`}
+                style={{
+                  transitionDelay: mobileMenuOpen ? `${i * 25}ms` : "0ms",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon
+                    className={`h-[18px] w-[18px] shrink-0 ${
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  />
+                  <span>{n.label}</span>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+              </Link>
+            );
+          })}
 
+          {/* CTA inside scrollable area */}
+          <div className="pt-2 pb-1">
+            {handleAction ? (
               <button
                 type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="grid h-8 w-8 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors"
-                aria-label="Close menu"
+                onClick={() => { close(); handleAction(); }}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 transition-opacity"
               >
-                <X className="h-4 w-4" />
+                Get Consultation
+                <ChevronRight className="h-4 w-4" />
               </button>
-            </div>
-
-            {/* Navigation Items */}
-            <nav className="space-y-1" aria-label="Mobile Navigation">
-              {navLinks.map((n, i) => {
-                const isActive = pathname === n.href;
-                const Icon = n.icon;
-                return (
-                  <Link
-                    key={n.label}
-                    href={n.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-medium transition-all duration-200 ${
-                      isActive
-                        ? "bg-accent text-primary font-bold shadow-xs"
-                        : "text-foreground hover:bg-muted"
-                    }`}
-                    style={{ transitionDelay: mobileMenuOpen ? `${30 + i * 20}ms` : "0ms" }}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                      <span>{n.label}</span>
-                    </div>
-                    <ChevronRight className="h-3.5 w-3.5 text-primary" />
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Call to Action Button */}
-            <div className="pt-1">
-              {handleAction ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    handleAction();
-                  }}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:opacity-95 transition-colors"
-                >
-                  <span>Get Consultation</span>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              ) : (
-                <Link
-                  href="/register"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:opacity-95 transition-colors"
-                >
-                  <span>Get Consultation</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              )}
-            </div>
+            ) : (
+              <Link
+                href="/register"
+                onClick={close}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 transition-opacity"
+              >
+                Get Consultation
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
+        </nav>
 
-          {/* Bottom Contact Details in Mobile Menu */}
-          <div className="pt-3 border-t border-border mt-3 space-y-1.5 text-[11px] text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>071 491 9354 · 070 270 7624</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span>Japan: +81 90-3841-0745 (Call / WA)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
-              <span className="truncate">tomoniinstitute@gmail.com</span>
-            </div>
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground/80">
-              <MapPin className="h-3 w-3 text-primary shrink-0" />
-              <span className="truncate">Kuliyapitiya, Sri Lanka</span>
-            </div>
+        {/* ── Bottom: contact strip — always visible, never scrolls ── */}
+        <div className="shrink-0 border-t border-border px-5 py-4 space-y-2 bg-muted/40">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+            Contact
+          </p>
+          <div className="flex items-center gap-2 text-xs text-foreground/80">
+            <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>071 491 9354 · 070 270 7624</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-foreground/80">
+            <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>+81 90-3841-0745 (Japan / WA)</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-foreground/80">
+            <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span className="truncate">tomoniinstitute@gmail.com</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+            <span>Kuliyapitiya, Sri Lanka</span>
           </div>
         </div>
       </div>
