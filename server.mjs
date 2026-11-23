@@ -276,6 +276,22 @@ export function createServer(options = {}) {
         if (input.intake && !input.intake_id) input.intake_id = input.intake;
         if (input.intake_id === null || input.intake_id === undefined) input.intake_id = "";
 
+        // Ensure course_id points to an active course in DB
+        const validCourse = store.one(
+          "SELECT id FROM courses WHERE id=? AND active=1",
+          input.course_id,
+        );
+        if (!validCourse) {
+          const byLevel = store.one(
+            "SELECT id FROM courses WHERE id=? AND active=1",
+            input.current_level,
+          );
+          const firstActive = store.one(
+            "SELECT id FROM courses WHERE active=1 ORDER BY id ASC",
+          );
+          input.course_id = byLevel?.id || firstActive?.id || "N5";
+        }
+
         let challenge = store.one(
           "SELECT * FROM form_challenges WHERE token=?",
           input.formToken || input.form_token || "",

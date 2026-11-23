@@ -234,6 +234,11 @@ function RegistrationFormInner() {
 
       if (!formData.phone.trim()) {
         clientErrors.phone = "Student phone number is required.";
+      } else {
+        const norm = formData.phone.trim().replace(/^\+94\s*/, "0").replace(/[ -]/g, "");
+        if (!/^0[1-9]\d{8}$/.test(norm) && !/^\+?[1-9]\d{7,14}$/.test(norm)) {
+          clientErrors.phone = "Enter a valid phone number (e.g. 077 123 4567).";
+        }
       }
     }
 
@@ -268,6 +273,11 @@ function RegistrationFormInner() {
         }
         if (!formData.guardian_phone.trim()) {
           clientErrors.guardian_phone = "Guardian phone number is required.";
+        } else {
+          const norm = formData.guardian_phone.trim().replace(/^\+94\s*/, "0").replace(/[ -]/g, "");
+          if (!/^0[1-9]\d{8}$/.test(norm) && !/^\+?[1-9]\d{7,14}$/.test(norm)) {
+            clientErrors.guardian_phone = "Enter a valid guardian phone number (e.g. 077 123 4567).";
+          }
         }
       }
     }
@@ -301,6 +311,11 @@ function RegistrationFormInner() {
         ? idempotencyKey
         : generateUUID();
 
+      const selectedCourse =
+        config.courses.find((c) => c.id === formData.current_level)?.id ||
+        config.courses[0]?.id ||
+        "N5";
+
       const payload = {
         full_name: formData.full_name.trim(),
         preferred_name: formData.preferred_name.trim(),
@@ -309,7 +324,7 @@ function RegistrationFormInner() {
         address_line1: formData.address_line1.trim(),
         address_line2: formData.address_line2.trim(),
         address_city: formData.address_city.trim(),
-        course_id: formData.category || "general",
+        course_id: selectedCourse,
         current_level: formData.current_level,
         category: formData.category,
         intake_id: isVisa ? formData.intake_id : "",
@@ -341,6 +356,12 @@ function RegistrationFormInner() {
           const firstKey = Object.keys(result.fields)[0];
           const elem = document.getElementsByName(firstKey)[0];
           if (elem) elem.focus();
+          const detailMessages = Object.entries(result.fields)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(" | ");
+          if (detailMessages) {
+            setGeneralError(`Please correct: ${detailMessages}`);
+          }
         }
         throw new Error(result.error || "Unable to submit your registration.");
       }
