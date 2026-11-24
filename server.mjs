@@ -1502,7 +1502,17 @@ export function createServer(options = {}) {
         return json(409, {
           error: "This record already exists. Refresh and try again.",
         });
-      console.error("Request failed:", error.name);
+      if (
+        error.message?.includes("Student number must") ||
+        error.message?.includes("CHECK constraint") ||
+        error.message?.includes("FOREIGN KEY constraint")
+      ) {
+        console.error("Database constraint failed:", error);
+        return json(400, {
+          error: error.message,
+        });
+      }
+      console.error("Request failed:", error);
       return json(500, {
         error:
           "Something went wrong. Please try again or contact an administrator.",
