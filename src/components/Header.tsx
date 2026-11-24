@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import TomoniLogo from "@/components/TomoniLogo";
@@ -25,6 +25,9 @@ interface HeaderProps {
   onOpenSearch?: () => void;
 }
 
+/** Save/restore scroll position across iOS body-lock/unlock cycles */
+let _savedScrollY = 0;
+
 export default function Header({
   onOpenConsultation,
   onOpenApply,
@@ -41,34 +44,47 @@ export default function Header({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* ── Lock body scroll when drawer is open (iOS-safe) ── */
+  /* ── iOS-safe body scroll lock ──
+   *
+   * Strategy: position:fixed + top:-scrollY is the only cross-browser
+   * approach that works on both iOS Safari and Chrome for Android.
+   * We also lock <html> overflow to prevent double-scroll on some devices.
+   */
   useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
     if (mobileMenuOpen) {
-      // Save current scroll position and lock
-      const scrollY = window.scrollY;
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.left = "0";
-      document.body.style.right = "0";
-      document.body.style.overflow = "hidden";
+      _savedScrollY = window.scrollY;
+      // Lock
+      html.style.overflow = "hidden";
+      body.style.position = "fixed";
+      body.style.top = `-${_savedScrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overflowY = "scroll"; // keep scrollbar width to avoid layout shift
     } else {
-      // Restore scroll position
-      const scrollY = document.body.style.top;
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.overflow = "";
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || "0") * -1);
-      }
+      // Unlock and restore
+      html.style.overflow = "";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflowY = "";
+      window.scrollTo({ top: _savedScrollY, behavior: "instant" as ScrollBehavior });
     }
+
     return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.overflow = "";
+      // Safety cleanup if component unmounts while open
+      html.style.overflow = "";
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflowY = "";
     };
   }, [mobileMenuOpen]);
 
@@ -87,7 +103,8 @@ export default function Header({
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  const close = () => setMobileMenuOpen(false);
+  const close = useCallback(() => setMobileMenuOpen(false), []);
+
   const handleAction = onOpenConsultation || onOpenApply;
 
   const navLinks = [
@@ -169,7 +186,7 @@ export default function Header({
               )}
             </div>
 
-            {/* Hamburger button */}
+            {/* Hamburger button — visible on mobile only (< lg) */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
@@ -190,31 +207,52 @@ export default function Header({
 
       {/* ════════════════════════════════════
           MOBILE DRAWER  (portal-like, fixed)
+          Uses 100dvh for correct mobile-browser height
+          (excludes the browser chrome / address bar).
       ════════════════════════════════════ */}
 
-      {/* Backdrop */}
+      {/* Backdrop — covers full screen, blocks all touch */}
       <div
         aria-hidden="true"
         onClick={close}
+        style={{ touchAction: "none" }}
         className={`fixed inset-0 z-[60] bg-black/60 transition-opacity duration-300 lg:hidden ${
-          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          mobileMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       />
 
-      {/* Drawer panel — slides in from right */}
+      {/* Drawer panel — slides in from right
+       *  h-[100dvh]  = dynamic viewport height (shrinks when browser chrome hides)
+       *  max-h-[100dvh] fallback for browsers without dvh support → h-screen
+       *  safe-area insets handle notched/gesture-bar phones
+       */}
       <div
         id="mobile-drawer"
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`fixed top-0 right-0 z-[70] h-screen w-[min(320px,100vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden transition-transform duration-300 ease-out ${
+        style={{
+          height: "100dvh",
+          // Fallback: some older browsers ignore dvh; in that case the
+          // body-lock makes h-screen safe since body is position:fixed.
+          maxHeight: "100dvh",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+        className={`fixed top-0 right-0 z-[70] w-[min(320px,85vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden transition-transform duration-300 ease-out will-change-transform ${
           mobileMenuOpen ? "translate-x-0" : "translate-x-full"
         }`}
-        /* Prevent touch-scroll from escaping the drawer on iOS */
-        onTouchMove={(e) => e.stopPropagation()}
+        onTouchMove={(e) => {
+          // Only stop propagation if the drawer nav itself is NOT scrolling
+          const target = e.currentTarget;
+          const nav = target.querySelector("nav");
+          if (nav && nav.contains(e.target as Node)) return; // let the nav scroll
+          e.stopPropagation();
+        }}
       >
-        {/* ── Top: logo + close ── */}
+        {/* ── Top: logo + close (fixed height, never scrolls) ── */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <TomoniLogo size="sm" />
           <button
@@ -227,10 +265,12 @@ export default function Header({
           </button>
         </div>
 
-        {/* ── Middle: nav links — scrollable if needed ── */}
+        {/* ── Middle: nav links — scrollable ── */}
         <nav
           className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1"
           aria-label="Mobile Navigation"
+          /* Allow native touch-scroll inside this nav on iOS */
+          style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
         >
           {navLinks.map((n, i) => {
             const isActive = pathname === n.href;
@@ -240,13 +280,13 @@ export default function Header({
                 key={n.label}
                 href={n.href}
                 onClick={close}
-                className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+                className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-primary/10 text-primary font-semibold"
-                    : "text-foreground hover:bg-muted"
+                    : "text-foreground hover:bg-muted active:bg-muted/70"
                 }`}
                 style={{
-                  transitionDelay: mobileMenuOpen ? `${i * 25}ms` : "0ms",
+                  transitionDelay: mobileMenuOpen ? `${i * 20}ms` : "0ms",
                 }}
               >
                 <div className="flex items-center gap-3">
@@ -262,13 +302,16 @@ export default function Header({
             );
           })}
 
-          {/* CTA inside scrollable area */}
-          <div className="pt-2 pb-1">
+          {/* CTA button */}
+          <div className="pt-3 pb-2">
             {handleAction ? (
               <button
                 type="button"
-                onClick={() => { close(); handleAction(); }}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 transition-opacity"
+                onClick={() => {
+                  close();
+                  handleAction();
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity"
               >
                 Get Consultation
                 <ChevronRight className="h-4 w-4" />
@@ -277,7 +320,7 @@ export default function Header({
               <Link
                 href="/register"
                 onClick={close}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 transition-opacity"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity"
               >
                 Get Consultation
                 <ChevronRight className="h-4 w-4" />
@@ -286,7 +329,7 @@ export default function Header({
           </div>
         </nav>
 
-        {/* ── Bottom: contact strip — always visible, never scrolls ── */}
+        {/* ── Bottom: contact strip (fixed, never scrolls) ── */}
         <div className="shrink-0 border-t border-border px-5 py-4 space-y-2 bg-muted/40">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
             Contact
