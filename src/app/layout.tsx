@@ -97,9 +97,14 @@ export const metadata: Metadata = {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: [
+      { url: "/tomoni_japanese_institute_favicon.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/tomoni_japanese_institute_favicon.png",
+    apple: [
+      { url: "/tomoni_japanese_institute_favicon.png", type: "image/png" },
+    ],
   },
   manifest: "/manifest.webmanifest",
 };
