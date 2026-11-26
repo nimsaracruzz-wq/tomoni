@@ -402,7 +402,7 @@ export default function AboutPage() {
         </section>
 
         {/* Ready CTA Banner */}
-        <ReadyCtaBanner onContactClick={() => setIsApplyModalOpen(true)} />
+        <ReadyCtaBanner />
       </main>
 
       <Footer />

@@ -8,7 +8,7 @@ interface ReadyCtaBannerProps {
   onContactClick?: () => void;
 }
 
-export default function ReadyCtaBanner({ onContactClick }: ReadyCtaBannerProps) {
+export default function ReadyCtaBanner({}: ReadyCtaBannerProps) {
   return (
     <section className="py-12 lg:py-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,8 +27,7 @@ export default function ReadyCtaBanner({ onContactClick }: ReadyCtaBannerProps) 
 
             <div className="flex justify-center px-6 pb-7 pt-4 lg:col-span-2 lg:px-0 lg:pb-0 lg:pr-8 lg:pt-0 lg:justify-end">
               <Link
-                href="/register"
-                onClick={onContactClick}
+                href="/contact"
                 className="group inline-flex items-center gap-2 rounded-full border border-white/50 bg-white px-7 py-3 text-xs font-bold text-signal-deep shadow-sm transition-colors duration-200 hover:bg-paper-raised focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:text-sm"
               >
                 <span>Contact Us</span>

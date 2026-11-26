@@ -469,7 +469,7 @@ export default function ContactPage() {
         </section>
 
         {/* Ready CTA Banner */}
-        <ReadyCtaBanner onContactClick={() => setIsApplyModalOpen(true)} />
+        <ReadyCtaBanner />
       </main>
 
       <Footer />
