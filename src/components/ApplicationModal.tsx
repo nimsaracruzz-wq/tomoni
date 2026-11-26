@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
 
 interface ApplicationModalProps {
@@ -72,6 +73,11 @@ export default function ApplicationModal({
     };
   }, [isOpen]);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -82,7 +88,30 @@ export default function ApplicationModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  /* ── Body scroll lock when modal is open ── */
+  useEffect(() => {
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalTop = document.body.style.top;
+    const originalWidth = document.body.style.width;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.top = originalTop;
+      document.body.style.width = originalWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
 
   const handleNext = () => {
     setErrorMessage("");
@@ -167,27 +196,31 @@ export default function ApplicationModal({
     onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+    >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-navy/80 transition-opacity"
+        className="fixed inset-0 bg-navy/80 backdrop-blur-xs transition-opacity"
         onClick={handleResetAndClose}
+        aria-hidden="true"
       />
 
-      <div className="min-h-full flex items-center justify-center p-4">
-        <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-lg border border-border-light p-6 sm:p-8 overflow-hidden z-10 animate-fade-in my-8">
-          
-          {/* Close Button */}
-          <button
-            type="button"
-            onClick={handleResetAndClose}
-            className="absolute top-5 right-5 p-2 text-stone-dark hover:text-navy hover:bg-cream rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5" />
-          </button>
+      <div className="relative z-10 w-full max-w-xl max-h-[90dvh] flex flex-col bg-white rounded-3xl shadow-2xl border border-border-light overflow-hidden animate-fade-in">
+        {/* Close Button */}
+        <button
+          type="button"
+          onClick={handleResetAndClose}
+          className="absolute top-4 right-4 z-20 p-2 text-stone-dark hover:text-navy hover:bg-cream rounded-full transition-colors cursor-pointer touch-manipulation"
+          aria-label="Close modal"
+        >
+          <X className="w-5 h-5" />
+        </button>
 
+        <div className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8">
           {!isSubmitted ? (
             <div>
               {/* Header */}
@@ -491,7 +524,7 @@ export default function ApplicationModal({
               <button
                 type="button"
                 onClick={handleResetAndClose}
-                className="px-6 py-2.5 bg-navy hover:bg-red text-white text-xs font-semibold rounded-full transition-colors shadow-sm"
+                className="px-6 py-2.5 bg-navy hover:bg-red text-white text-xs font-semibold rounded-full transition-colors shadow-sm cursor-pointer touch-manipulation"
               >
                 Close & Return
               </button>
@@ -500,6 +533,7 @@ export default function ApplicationModal({
 
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
