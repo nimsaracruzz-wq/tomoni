@@ -1515,7 +1515,8 @@ export function createServer(options = {}) {
       if (
         error.message?.includes("Student number must") ||
         error.message?.includes("CHECK constraint") ||
-        error.message?.includes("FOREIGN KEY constraint")
+        error.message?.includes("FOREIGN KEY constraint") ||
+        error.message?.includes("NOT NULL constraint")
       ) {
         console.error("Database constraint failed:", error);
         return json(400, {

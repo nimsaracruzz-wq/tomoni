@@ -204,14 +204,26 @@ export function openDatabase(filename) {
     const version = file.split("_")[0];
     if (store.one("SELECT version FROM migrations WHERE version=?", version))
       continue;
-    store.tx(() => {
-      db.exec(readFileSync(path.join(ROOT, "migrations", file), "utf8"));
-      store.run(
-        "INSERT INTO migrations(version,applied_at) VALUES(?,?)",
-        version,
-        now(),
-      );
-    });
+    const sql = readFileSync(path.join(ROOT, "migrations", file), "utf8");
+    const needsFkOff = /(?:^|\n)\s*DROP\s+TABLE\b/i.test(sql);
+    if (needsFkOff) db.exec("PRAGMA foreign_keys=OFF;");
+    try {
+      store.tx(() => {
+        db.exec(sql);
+        store.run(
+          "INSERT INTO migrations(version,applied_at) VALUES(?,?)",
+          version,
+          now(),
+        );
+      });
+      if (needsFkOff) {
+        const violations = db.prepare("PRAGMA foreign_key_check").all();
+        if (violations.length)
+          throw new Error("Foreign key check failed after migration " + file);
+      }
+    } finally {
+      if (needsFkOff) db.exec("PRAGMA foreign_keys=ON;");
+    }
   }
   store.run(
     "UPDATE email_recipients SET status='Failed',error='Sending was interrupted. Outcome is uncertain; verify with your SMTP provider before resending.' WHERE status='Sending'",
