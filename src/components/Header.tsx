@@ -28,10 +28,7 @@ interface HeaderProps {
 /** Save/restore scroll position across iOS body-lock/unlock cycles */
 let _savedScrollY = 0;
 
-export default function Header({
-  onOpenConsultation,
-  onOpenApply,
-}: HeaderProps) {
+export default function Header({}: HeaderProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -113,8 +110,6 @@ export default function Header({
   const close = useCallback(() => setMobileMenuOpen(false), []);
   const toggle = useCallback(() => setMobileMenuOpen((v) => !v), []);
 
-  const handleAction = onOpenConsultation || onOpenApply;
-
   const navLinks = [
     { label: "Home", href: "/", icon: Home },
     { label: "Courses", href: "/courses", icon: BookOpen },
@@ -172,28 +167,15 @@ export default function Header({
 
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-3">
-              {handleAction ? (
-                <button
-                  type="button"
-                  onClick={handleAction}
-                  className="items-center gap-3 rounded-full bg-primary py-1.5 pl-4 pr-1.5 text-xs font-semibold text-primary-foreground inline-flex hover:opacity-95 transition-colors shadow-sm group"
-                >
-                  <span>Get Consultation</span>
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-background text-foreground transition-transform group-hover:translate-x-0.5">
-                    <ChevronRight className="h-4 w-4 text-primary" />
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  href="/register"
-                  className="items-center gap-3 rounded-full bg-primary py-1.5 pl-4 pr-1.5 text-xs font-semibold text-primary-foreground inline-flex hover:opacity-95 transition-colors shadow-sm group"
-                >
-                  <span>Get Consultation</span>
-                  <span className="grid h-6 w-6 place-items-center rounded-full bg-background text-foreground transition-transform group-hover:translate-x-0.5">
-                    <ChevronRight className="h-4 w-4 text-primary" />
-                  </span>
-                </Link>
-              )}
+              <Link
+                href="/contact"
+                className="items-center gap-3 rounded-full bg-primary py-1.5 pl-4 pr-1.5 text-xs font-semibold text-primary-foreground inline-flex hover:opacity-95 transition-colors shadow-sm group"
+              >
+                <span>Get Consultation</span>
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-background text-foreground transition-transform group-hover:translate-x-0.5">
+                  <ChevronRight className="h-4 w-4 text-primary" />
+                </span>
+              </Link>
             </div>
 
             {/* Hamburger button — visible on mobile only (< lg) */}
@@ -313,28 +295,14 @@ export default function Header({
 
           {/* CTA button */}
           <div className="pt-3 pb-2">
-            {handleAction ? (
-              <button
-                type="button"
-                onClick={() => {
-                  close();
-                  handleAction();
-                }}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
-              >
-                Get Consultation
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            ) : (
-              <Link
-                href="/register"
-                onClick={close}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
-              >
-                Get Consultation
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            )}
+            <Link
+              href="/contact"
+              onClick={close}
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
+            >
+              Get Consultation
+              <ChevronRight className="h-4 w-4" />
+            </Link>
           </div>
         </nav>
 

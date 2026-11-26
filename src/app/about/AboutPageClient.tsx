@@ -89,10 +89,7 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-      <Header
-        onOpenConsultation={() => setIsApplyModalOpen(true)}
-        onOpenApply={() => setIsApplyModalOpen(true)}
-      />
+      <Header onOpenApply={() => setIsApplyModalOpen(true)} />
 
       <main className="flex-1">
         {/* Hero Section */}

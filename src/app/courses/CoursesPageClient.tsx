@@ -248,7 +248,7 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-foreground flex flex-col selection:bg-accent selection:text-primary">
-      <Header onOpenConsultation={() => openEnroll("general")} />
+      <Header />
 
       <main className="flex-grow pb-16">
         {/* Banner Section */}

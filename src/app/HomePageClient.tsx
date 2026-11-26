@@ -250,10 +250,7 @@ export default function HomePageClient() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <Header
-        onOpenConsultation={() => handleOpenApply("visa")}
-        onOpenApply={() => handleOpenApply("visa")}
-      />
+      <Header onOpenApply={() => handleOpenApply("visa")} />
 
       {/* HERO SECTION WITH ENHANCED SEO HEADINGS */}
       <section className="relative overflow-hidden border-b border-border bg-background">
