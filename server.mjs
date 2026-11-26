@@ -488,6 +488,16 @@ export function createServer(options = {}) {
           store.audit(actor, "Uploaded gallery image", "gallery_image", imageId);
           return json(201, { id: imageId });
         }
+        if (route.startsWith("/api/admin/gallery/") && method === "PATCH") {
+          need("records");
+          const imageId = route.slice("/api/admin/gallery/".length);
+          if (!store.one("SELECT id FROM gallery_images WHERE id=?", imageId)) fail("Gallery image not found.", 404);
+          const input = await body(req);
+          const alt = typeof input.alt_text === "string" ? input.alt_text.trim().slice(0, 180) : "";
+          store.run("UPDATE gallery_images SET alt_text=? WHERE id=?", alt, imageId);
+          store.audit(actor, "Updated gallery caption", "gallery_image", imageId);
+          return json(200, { ok: true, id: imageId, alt_text: alt });
+        }
         if (route.startsWith("/api/admin/gallery/") && method === "DELETE") {
           need("records");
           const imageId = route.slice("/api/admin/gallery/".length);

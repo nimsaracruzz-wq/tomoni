@@ -1401,4 +1401,4 @@ dialog::backdrop {
     padding: 12px;
   }
 }
-#main .gallery-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}.gallery-admin-card{overflow:hidden;border:1px solid var(--border);border-radius:14px;background:var(--panel)}.gallery-admin-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}.gallery-admin-card div{padding:12px}.gallery-admin-card p{min-height:2.5em;margin:0 0 10px;font-size:13px}
+#main .gallery-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}.gallery-admin-card{overflow:hidden;border:1px solid var(--border);border-radius:14px;background:var(--panel);display:flex;flex-direction:column}.gallery-admin-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}.gallery-admin-card>div{padding:12px;display:flex;flex-direction:column;flex:1;justify-content:space-between;gap:10px}.gallery-admin-card p{min-height:2.5em;margin:0;font-size:13px;line-height:1.45}.gallery-admin-card p.muted{color:var(--muted)}.gallery-card-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}

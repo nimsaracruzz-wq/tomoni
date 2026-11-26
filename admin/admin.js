@@ -570,9 +570,9 @@ async function galleryPage() {
   $("#main").innerHTML =
     heading("PUBLIC WEBSITE", "Gallery", "Upload photos shown on the public gallery page.") +
     '<section class="panel"><div class="panel-head"><h2>Add a photo</h2></div><form data-handler="gallery-upload" class="form-grid"><label class="full">Photo<input name="photo" type="file" accept="image/jpeg,image/png,image/webp" required></label>' +
-    textarea("alt_text", "Short description (optional)", "", 2) +
-    '<p class="form-help full">Use JPG, PNG, or WebP files smaller than 1.8 MB.</p><p class="form-error full" role="alert"></p><button class="btn primary" type="submit">Upload photo</button></form></section>' +
-    panel("Published photos", data.images.length ? '<div class="gallery-admin-grid">' + data.images.map((image) => '<article class="gallery-admin-card"><img src="' + h(image.image_data) + '" alt="' + h(image.alt_text || "Gallery image") + '"><div><p>' + h(image.alt_text || "No description") + '</p>' + button("remove-gallery-" + image.id, "Remove", "danger", "trash-2") + '</div></article>').join("") + "</div>" : empty("No gallery photos yet", "Upload the first photo for the public gallery.", "images"));
+    textarea("alt_text", "Photo title / caption (optional)", "", 2) +
+    '<p class="form-help full">Use JPG, PNG, or WebP files smaller than 1.8 MB. Up to 180 characters for the title/caption.</p><p class="form-error full" role="alert"></p><button class="btn primary" type="submit">Upload photo</button></form></section>' +
+    panel("Published photos", data.images.length ? '<div class="gallery-admin-grid">' + data.images.map((image) => '<article class="gallery-admin-card"><img src="' + h(image.image_data) + '" alt="' + h(image.alt_text || "Gallery image") + '"><div><p class="' + (image.alt_text ? "" : "muted") + '">' + h(image.alt_text || "No caption") + '</p><div class="gallery-card-actions">' + button("edit-gallery-" + image.id, "Edit caption", "ghost", "pencil") + button("remove-gallery-" + image.id, "Remove", "danger", "trash-2") + '</div></div></article>').join("") + "</div>" : empty("No gallery photos yet", "Upload the first photo for the public gallery.", "images"));
   forms["gallery-upload"] = async (form) => {
     const file = form.elements.photo.files[0];
     if (!file) throw new Error("Choose a photo to upload.");
@@ -588,6 +588,29 @@ async function galleryPage() {
     render();
   };
   data.images.forEach((image) => {
+    handlers["edit-gallery-" + image.id] = () => {
+      modal(
+        "Edit photo caption",
+        '<form id="gallery-caption-form" data-handler="gallery-caption-save" class="form-grid">' +
+          textarea("alt_text", "Photo title / caption", image.alt_text || "", 3) +
+          '<p class="form-help full">Displayed as the title overlay on the public gallery page (max 180 characters).</p>' +
+          '<p class="form-error full" role="alert"></p>' +
+          "</form>",
+        '<div class="modal-actions">' +
+          button("close-modal", "Cancel") +
+          '<button class="btn primary" type="submit" form="gallery-caption-form">Save caption</button>' +
+          "</div>",
+      );
+      forms["gallery-caption-save"] = async (form) => {
+        await api("/api/admin/gallery/" + image.id, {
+          method: "PATCH",
+          body: { alt_text: form.elements.alt_text.value },
+        });
+        $("#modal").close();
+        toast("Gallery caption updated.");
+        render();
+      };
+    };
     handlers["remove-gallery-" + image.id] = () => confirmAction("Remove photo", "This removes the photo from the public gallery.", async () => {
       await api("/api/admin/gallery/" + image.id, { method: "DELETE", body: {} });
       toast("Gallery photo removed.");

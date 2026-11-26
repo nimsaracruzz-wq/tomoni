@@ -36,7 +36,7 @@ export default function GalleryPage() {
               {images.map((image, index) => (
                 <figure
                   key={image.id}
-                  className={`group relative overflow-hidden rounded-2xl bg-muted shadow-sm ${index % 5 === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-[4/5]"}`}
+                  className={`group relative overflow-hidden rounded-2xl border border-border/60 bg-muted shadow-sm transition-shadow duration-300 hover:shadow-md ${index % 5 === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-[4/5]"}`}
                 >
                   <Image
                     src={image.image_data}
@@ -44,12 +44,23 @@ export default function GalleryPage() {
                     fill
                     unoptimized
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className="object-cover transition-transform duration-500 ease-out "
+                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   />
                   {image.alt_text && (
-                    <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 pb-4 pt-10 text-xs text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                      {image.alt_text}
-                    </figcaption>
+                    <>
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <figcaption className="absolute inset-x-0 bottom-0 p-3.5 sm:p-5 text-white">
+                        <p
+                          className={`font-serif font-medium leading-snug tracking-tight text-white drop-shadow-sm ${
+                            index % 5 === 0
+                              ? "text-base sm:text-xl line-clamp-3"
+                              : "text-sm sm:text-base line-clamp-2"
+                          }`}
+                        >
+                          {image.alt_text}
+                        </p>
+                      </figcaption>
+                    </>
                   )}
                 </figure>
               ))}
