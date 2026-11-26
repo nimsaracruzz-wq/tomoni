@@ -57,7 +57,7 @@ export default function AboutPage() {
     },
     {
       name: "Muditha Sensei",
-      fullName: "Muditha Anuragi",
+      fullName: "Muditha Anurangi",
       role: "Japanese Language Teacher",
       desc: "Teaches JLPT N5 to N4 and JFT preparation for students building a foundation in Japanese.",
       image: "/images/muditha_sensei.jpg",
