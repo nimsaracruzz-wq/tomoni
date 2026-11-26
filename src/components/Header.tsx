@@ -36,10 +36,15 @@ export default function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const wasOpenRef = useRef(false);
 
   /* ── Scroll detection ── */
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      const scrolled = window.scrollY > 20;
+      setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+    };
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -55,6 +60,7 @@ export default function Header({
     const body = document.body;
 
     if (mobileMenuOpen) {
+      wasOpenRef.current = true;
       _savedScrollY = window.scrollY;
       // Lock
       html.style.overflow = "hidden";
@@ -64,8 +70,9 @@ export default function Header({
       body.style.right = "0";
       body.style.width = "100%";
       body.style.overflowY = "scroll"; // keep scrollbar width to avoid layout shift
-    } else {
-      // Unlock and restore
+    } else if (wasOpenRef.current) {
+      wasOpenRef.current = false;
+      // Unlock and restore only if it was previously opened
       html.style.overflow = "";
       body.style.position = "";
       body.style.top = "";
@@ -104,6 +111,7 @@ export default function Header({
   }, [pathname]);
 
   const close = useCallback(() => setMobileMenuOpen(false), []);
+  const toggle = useCallback(() => setMobileMenuOpen((v) => !v), []);
 
   const handleAction = onOpenConsultation || onOpenApply;
 
@@ -121,9 +129,11 @@ export default function Header({
     <>
       {/* ════════════════════════════════════
           HEADER BAR
+          Elevated to z-50 isolate to guarantee higher stacking context
+          than any page hero overlays, modals, or scrolling content.
       ════════════════════════════════════ */}
       <header
-        className={`sticky top-0 z-40 w-full backdrop-blur-md transition-all duration-300 ${
+        className={`sticky top-0 z-50 isolate w-full backdrop-blur-md transition-colors duration-300 ${
           isScrolled
             ? "bg-background/95 shadow-sm border-b border-border/80"
             : "bg-background/80"
@@ -131,7 +141,7 @@ export default function Header({
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-5">
           <div
-            className={`flex items-center justify-between transition-all duration-200 ${
+            className={`flex items-center justify-between transition-[padding] duration-200 ${
               isScrolled ? "py-2 sm:py-3" : "py-3 sm:py-4"
             }`}
           >
@@ -189,11 +199,11 @@ export default function Header({
             {/* Hamburger button — visible on mobile only (< lg) */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              aria-label="Toggle navigation menu"
+              onClick={toggle}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-drawer"
-              className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground lg:hidden shadow-sm hover:opacity-90 transition-opacity focus:outline-none shrink-0"
+              className="relative z-20 grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground lg:hidden shadow-sm hover:opacity-90 active:scale-95 transition-all focus:outline-none shrink-0 cursor-pointer touch-manipulation select-none"
             >
               {mobileMenuOpen ? (
                 <X className="h-5 w-5" />
@@ -206,46 +216,46 @@ export default function Header({
       </header>
 
       {/* ════════════════════════════════════
-          MOBILE DRAWER  (portal-like, fixed)
+          MOBILE DRAWER (portal-like, fixed)
           Uses 100dvh for correct mobile-browser height
-          (excludes the browser chrome / address bar).
       ════════════════════════════════════ */}
 
-      {/* Backdrop — covers full screen, blocks all touch */}
+      {/* Backdrop — covers full screen, blocks touches ONLY when open */}
       <div
         aria-hidden="true"
         onClick={close}
-        style={{ touchAction: "none" }}
-        className={`fixed inset-0 z-[60] bg-black/60 transition-opacity duration-300 lg:hidden ${
+        style={mobileMenuOpen ? { touchAction: "none" } : undefined}
+        className={`fixed inset-0 z-[60] bg-black/60 transition-all duration-300 lg:hidden ${
           mobileMenuOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+            ? "opacity-100 pointer-events-auto visible"
+            : "opacity-0 pointer-events-none invisible"
         }`}
       />
 
       {/* Drawer panel — slides in from right
-       *  h-[100dvh]  = dynamic viewport height (shrinks when browser chrome hides)
-       *  max-h-[100dvh] fallback for browsers without dvh support → h-screen
-       *  safe-area insets handle notched/gesture-bar phones
+       *  h-[100dvh] = dynamic viewport height
+       *  Completely pointer-events-none and invisible when closed so it
+       *  can never intercept clicks or touches aimed at the header or hamburger button.
        */}
       <div
         id="mobile-drawer"
         ref={drawerRef}
         role="dialog"
-        aria-modal="true"
+        aria-modal={mobileMenuOpen}
+        aria-hidden={!mobileMenuOpen}
         aria-label="Navigation menu"
         style={{
           height: "100dvh",
-          // Fallback: some older browsers ignore dvh; in that case the
-          // body-lock makes h-screen safe since body is position:fixed.
           maxHeight: "100dvh",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
-        className={`fixed top-0 right-0 z-[70] w-[min(320px,85vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden transition-transform duration-300 ease-out will-change-transform ${
-          mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 z-[70] w-[min(320px,85vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden transition-all duration-300 ease-out will-change-transform ${
+          mobileMenuOpen
+            ? "translate-x-0 opacity-100 pointer-events-auto visible"
+            : "translate-x-full opacity-0 pointer-events-none invisible"
         }`}
         onTouchMove={(e) => {
-          // Only stop propagation if the drawer nav itself is NOT scrolling
+          if (!mobileMenuOpen) return;
           const target = e.currentTarget;
           const nav = target.querySelector("nav");
           if (nav && nav.contains(e.target as Node)) return; // let the nav scroll
@@ -259,7 +269,7 @@ export default function Header({
             type="button"
             onClick={close}
             aria-label="Close menu"
-            className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors"
+            className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors cursor-pointer touch-manipulation"
           >
             <X className="h-4 w-4" />
           </button>
@@ -269,7 +279,6 @@ export default function Header({
         <nav
           className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1"
           aria-label="Mobile Navigation"
-          /* Allow native touch-scroll inside this nav on iOS */
           style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
         >
           {navLinks.map((n, i) => {
@@ -311,7 +320,7 @@ export default function Header({
                   close();
                   handleAction();
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
               >
                 Get Consultation
                 <ChevronRight className="h-4 w-4" />
@@ -320,7 +329,7 @@ export default function Header({
               <Link
                 href="/register"
                 onClick={close}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity"
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
               >
                 Get Consultation
                 <ChevronRight className="h-4 w-4" />
