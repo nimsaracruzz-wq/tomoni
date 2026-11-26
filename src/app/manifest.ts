@@ -11,13 +11,18 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#dc2626",
     icons: [
       {
-        src: "/tomoni_japanese_institute_favicon.png",
-        sizes: "any",
+        src: "/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+      },
+      {
+        src: "/icon-512.png",
+        sizes: "512x512",
         type: "image/png",
       },
       {
         src: "/favicon.ico",
-        sizes: "any",
+        sizes: "48x48",
         type: "image/x-icon",
       },
     ],

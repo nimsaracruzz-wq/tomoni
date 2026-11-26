@@ -90,6 +90,8 @@ html {
   color: var(--foreground);
   overflow-x: clip;
   scrollbar-color: var(--signal) var(--paper-warm);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -97,8 +99,24 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: clip;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+a,
+button,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* Prevent iOS Safari from auto-zooming when focusing inputs smaller than 16px */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
