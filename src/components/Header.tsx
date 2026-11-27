@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import TomoniLogo from "@/components/TomoniLogo";
@@ -25,15 +26,17 @@ interface HeaderProps {
   onOpenSearch?: () => void;
 }
 
-/** Save/restore scroll position across iOS body-lock/unlock cycles */
-let _savedScrollY = 0;
-
 export default function Header({}: HeaderProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
-  const wasOpenRef = useRef(false);
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   /* ── Scroll detection ── */
   useEffect(() => {
@@ -46,49 +49,52 @@ export default function Header({}: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* ── iOS-safe body scroll lock ──
+  /* ── Cross-browser scroll lock without shifting body or sticky header ──
    *
-   * Strategy: position:fixed + top:-scrollY is the only cross-browser
-   * approach that works on both iOS Safari and Chrome for Android.
-   * We also lock <html> overflow to prevent double-scroll on some devices.
+   * Locking html/body overflow (instead of position: fixed on body) keeps
+   * window.scrollY intact so the sticky header and drawer never jump or
+   * change state when opened from lower sections on the page.
+   * A non-passive touchmove guard blocks background rubber-band scrolling
+   * on iOS Safari while keeping the drawer's nav list scrollable.
    */
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
 
-    if (mobileMenuOpen) {
-      wasOpenRef.current = true;
-      _savedScrollY = window.scrollY;
-      // Lock
-      html.style.overflow = "hidden";
-      body.style.position = "fixed";
-      body.style.top = `-${_savedScrollY}px`;
-      body.style.left = "0";
-      body.style.right = "0";
-      body.style.width = "100%";
-      body.style.overflowY = "scroll"; // keep scrollbar width to avoid layout shift
-    } else if (wasOpenRef.current) {
-      wasOpenRef.current = false;
-      // Unlock and restore only if it was previously opened
+    if (!mobileMenuOpen) {
       html.style.overflow = "";
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.width = "";
-      body.style.overflowY = "";
-      window.scrollTo({ top: _savedScrollY, behavior: "instant" as ScrollBehavior });
+      html.style.overscrollBehavior = "";
+      body.style.overflow = "";
+      body.style.overscrollBehavior = "";
+      return;
     }
 
+    const prevHtmlOverflow = html.style.overflow;
+    const prevHtmlOverscroll = html.style.overscrollBehavior;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+
+    html.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overflow = "hidden";
+    body.style.overscrollBehavior = "none";
+
+    const preventBackgroundScroll = (e: TouchEvent) => {
+      const nav = navRef.current;
+      if (nav && nav.contains(e.target as Node) && nav.scrollHeight > nav.clientHeight) {
+        return;
+      }
+      e.preventDefault();
+    };
+
+    document.addEventListener("touchmove", preventBackgroundScroll, { passive: false });
+
     return () => {
-      // Safety cleanup if component unmounts while open
-      html.style.overflow = "";
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.width = "";
-      body.style.overflowY = "";
+      document.removeEventListener("touchmove", preventBackgroundScroll);
+      html.style.overflow = prevHtmlOverflow;
+      html.style.overscrollBehavior = prevHtmlOverscroll;
+      body.style.overflow = prevBodyOverflow;
+      body.style.overscrollBehavior = prevBodyOverscroll;
     };
   }, [mobileMenuOpen]);
 
@@ -198,137 +204,140 @@ export default function Header({}: HeaderProps) {
       </header>
 
       {/* ════════════════════════════════════
-          MOBILE DRAWER (portal-like, fixed)
-          Uses 100dvh for correct mobile-browser height
+          MOBILE DRAWER (Portaled to document.body)
+          Always renders in the root viewport stacking context with
+          consistent positioning and animation regardless of scroll position.
       ════════════════════════════════════ */}
-
-      {/* Backdrop — covers full screen, blocks touches ONLY when open */}
-      <div
-        aria-hidden="true"
-        onClick={close}
-        style={mobileMenuOpen ? { touchAction: "none" } : undefined}
-        className={`fixed inset-0 z-[60] bg-black/60 transition-all duration-300 lg:hidden ${
-          mobileMenuOpen
-            ? "opacity-100 pointer-events-auto visible"
-            : "opacity-0 pointer-events-none invisible"
-        }`}
-      />
-
-      {/* Drawer panel — slides in from right
-       *  h-[100dvh] = dynamic viewport height
-       *  Completely pointer-events-none and invisible when closed so it
-       *  can never intercept clicks or touches aimed at the header or hamburger button.
-       */}
-      <div
-        id="mobile-drawer"
-        ref={drawerRef}
-        role="dialog"
-        aria-modal={mobileMenuOpen}
-        aria-hidden={!mobileMenuOpen}
-        aria-label="Navigation menu"
-        style={{
-          height: "100dvh",
-          maxHeight: "100dvh",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
-        className={`fixed top-0 right-0 z-[70] w-[min(320px,85vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden transition-all duration-300 ease-out will-change-transform ${
-          mobileMenuOpen
-            ? "translate-x-0 opacity-100 pointer-events-auto visible"
-            : "translate-x-full opacity-0 pointer-events-none invisible"
-        }`}
-        onTouchMove={(e) => {
-          if (!mobileMenuOpen) return;
-          const target = e.currentTarget;
-          const nav = target.querySelector("nav");
-          if (nav && nav.contains(e.target as Node)) return; // let the nav scroll
-          e.stopPropagation();
-        }}
-      >
-        {/* ── Top: logo + close (fixed height, never scrolls) ── */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
-          <TomoniLogo size="sm" />
-          <button
-            type="button"
-            onClick={close}
-            aria-label="Close menu"
-            className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors cursor-pointer touch-manipulation"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* ── Middle: nav links — scrollable ── */}
-        <nav
-          className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1"
-          aria-label="Mobile Navigation"
-          style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
-        >
-          {navLinks.map((n, i) => {
-            const isActive = pathname === n.href;
-            const Icon = n.icon;
-            return (
-              <Link
-                key={n.label}
-                href={n.href}
-                onClick={close}
-                className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-foreground hover:bg-muted active:bg-muted/70"
-                }`}
-                style={{
-                  transitionDelay: mobileMenuOpen ? `${i * 20}ms` : "0ms",
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    className={`h-[18px] w-[18px] shrink-0 ${
-                      isActive ? "text-primary" : "text-muted-foreground"
-                    }`}
-                  />
-                  <span>{n.label}</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/60 shrink-0" />
-              </Link>
-            );
-          })}
-
-          {/* CTA button */}
-          <div className="pt-3 pb-2">
-            <Link
-              href="/contact"
+      {mounted &&
+        createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              aria-hidden="true"
               onClick={close}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
-            >
-              Get Consultation
-              <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </nav>
+              style={{
+                touchAction: "none",
+                visibility: mobileMenuOpen ? "visible" : "hidden",
+                transition: mobileMenuOpen
+                  ? "opacity 300ms ease-out, visibility 0ms linear 0ms"
+                  : "opacity 300ms ease-out, visibility 0ms linear 300ms",
+              }}
+              className={`fixed inset-0 z-[80] bg-black/60 backdrop-blur-[2px] lg:hidden ${
+                mobileMenuOpen
+                  ? "opacity-100 pointer-events-auto"
+                  : "opacity-0 pointer-events-none"
+              }`}
+            />
 
-        {/* ── Bottom: contact strip (fixed, never scrolls) ── */}
-        <div className="shrink-0 border-t border-border px-5 py-4 space-y-2 bg-muted/40">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-            Contact
-          </p>
-          <div className="flex items-center gap-2 text-xs text-foreground/80">
-            <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span>071 491 9354 · 070 270 7624</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-foreground/80">
-            <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span>+81 90-3841-0745 (Japan / WA)</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-foreground/80">
-            <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span className="truncate">tomoniinstitute@gmail.com</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
-            <span>Kuliyapitiya, Sri Lanka</span>
-          </div>
-        </div>
-      </div>
+            {/* Drawer panel — slides cleanly from right */}
+            <div
+              id="mobile-drawer"
+              ref={drawerRef}
+              role="dialog"
+              aria-modal={mobileMenuOpen}
+              aria-hidden={!mobileMenuOpen}
+              aria-label="Navigation menu"
+              style={{
+                height: "100dvh",
+                maxHeight: "100dvh",
+                paddingBottom: "env(safe-area-inset-bottom, 0px)",
+                visibility: mobileMenuOpen ? "visible" : "hidden",
+                transition: mobileMenuOpen
+                  ? "transform 300ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0ms linear 0ms"
+                  : "transform 300ms cubic-bezier(0.22, 1, 0.36, 1), visibility 0ms linear 300ms",
+              }}
+              className={`fixed top-0 right-0 z-[90] w-[min(320px,85vw)] bg-background border-l border-border shadow-2xl flex flex-col lg:hidden ${
+                mobileMenuOpen
+                  ? "translate-x-0 pointer-events-auto"
+                  : "translate-x-full pointer-events-none"
+              }`}
+            >
+              {/* ── Top: logo + close (fixed height, never scrolls) ── */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+                <TomoniLogo size="sm" />
+                <button
+                  type="button"
+                  onClick={close}
+                  aria-label="Close menu"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-muted text-foreground hover:bg-accent hover:text-primary transition-colors cursor-pointer touch-manipulation"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* ── Middle: nav links — scrollable ── */}
+              <nav
+                ref={navRef}
+                className="flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-1"
+                aria-label="Mobile Navigation"
+                style={{ WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+              >
+                {navLinks.map((n) => {
+                  const isActive = pathname === n.href;
+                  const Icon = n.icon;
+                  return (
+                    <Link
+                      key={n.label}
+                      href={n.href}
+                      onClick={close}
+                      className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-semibold"
+                          : "text-foreground hover:bg-muted active:bg-muted/70"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon
+                          className={`h-[18px] w-[18px] shrink-0 ${
+                            isActive ? "text-primary" : "text-muted-foreground"
+                          }`}
+                        />
+                        <span>{n.label}</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                    </Link>
+                  );
+                })}
+
+                {/* CTA button */}
+                <div className="pt-3 pb-2">
+                  <Link
+                    href="/contact"
+                    onClick={close}
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer touch-manipulation"
+                  >
+                    Get Consultation
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </nav>
+
+              {/* ── Bottom: contact strip (fixed, never scrolls) ── */}
+              <div className="shrink-0 border-t border-border px-5 py-4 space-y-2 bg-muted/40">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                  Contact
+                </p>
+                <div className="flex items-center gap-2 text-xs text-foreground/80">
+                  <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>071 491 9354 · 070 270 7624</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-foreground/80">
+                  <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>+81 90-3841-0745 (Japan / WA)</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-foreground/80">
+                  <Mail className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="truncate">tomoniinstitute@gmail.com</span>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>Kuliyapitiya, Sri Lanka</span>
+                </div>
+              </div>
+            </div>
+          </>,
+          document.body,
+        )}
     </>
   );
 }

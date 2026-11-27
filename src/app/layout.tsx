@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Serif_Display, DM_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import Preloader from "@/components/Preloader";
 import { SITE_URL, SITE_NAME, DEFAULT_SEO_KEYWORDS } from "@/lib/seo";
 import {
   JsonLd,
@@ -130,6 +131,7 @@ export default function RootLayout({
         <JsonLd data={getWebSiteSchema()} />
       </head>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-accent selection:text-primary font-sans">
+        <Preloader />
         {children}
 
         {/* Google Analytics 4 (if configured) */}
