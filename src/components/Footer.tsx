@@ -59,12 +59,13 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-5">
         {/* Main Footer Content */}
         <div className="flex flex-col gap-7 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-6">
+
           {/* Brand + Mobile Tagline */}
-          <div className="flex flex-col items-start gap-2 lg:shrink-0">
+          <div className="flex flex-col items-start gap-3 lg:shrink-0">
             <Link href="/" className="focus:outline-none">
               <TomoniLogo size="sm" />
             </Link>
-            <p className="text-xs leading-relaxed text-muted-foreground lg:hidden">
+            <p className="text-[13px] leading-relaxed text-muted-foreground lg:hidden">
               Japanese language education &amp; Japan study pathways from Kuliyapitiya.
             </p>
           </div>
@@ -72,25 +73,25 @@ export default function Footer() {
           {/* Navigation Links — clean 2-col grid on mobile, inline row on desktop */}
           <nav
             aria-label="Footer Navigation"
-            className="grid grid-cols-2 gap-x-6 gap-y-1.5 border-y border-border/60 py-4 sm:grid-cols-4 lg:flex lg:flex-wrap lg:items-center lg:gap-5 lg:border-0 lg:py-0"
+            className="grid grid-cols-2 gap-x-8 gap-y-2 border-y border-border/60 py-5 sm:grid-cols-4 lg:flex lg:flex-wrap lg:items-center lg:gap-5 lg:border-0 lg:py-0"
           >
             {navLinks.map((n) => (
               <Link
                 key={n.label}
                 href={n.href}
-                className="inline-flex min-h-[36px] items-center text-[13px] font-medium text-foreground/80 hover:text-primary transition-colors lg:min-h-0 lg:text-[11px] lg:text-muted-foreground"
+                className="inline-flex min-h-[40px] items-center text-[13px] font-medium text-foreground/80 hover:text-primary active:text-primary transition-colors lg:min-h-0 lg:text-[11px] lg:text-muted-foreground"
               >
                 {n.label}
               </Link>
             ))}
           </nav>
 
-          {/* Social Icons — equal spacing & 40px touch targets on mobile */}
-          <div className="flex flex-col gap-2.5 lg:block">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground lg:hidden">
+          {/* Social Icons — CENTERED on mobile, left-aligned on desktop */}
+          <div className="flex flex-col items-center gap-3 lg:block">
+            <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground lg:hidden">
               Follow Us
             </span>
-            <div className="flex items-center gap-3 lg:gap-2">
+            <div className="flex items-center justify-center gap-3.5 lg:gap-2 lg:justify-start">
               {socialLinks.map((s) => (
                 <a
                   key={s.name}
@@ -98,11 +99,11 @@ export default function Footer() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={s.name}
-                  className="grid h-10 w-10 place-items-center rounded-full bg-foreground text-background hover:bg-primary active:scale-95 transition-all shadow-xs lg:h-7 lg:w-7"
+                  className="grid h-12 w-12 place-items-center rounded-full bg-foreground text-background hover:bg-primary active:scale-95 transition-all shadow-sm lg:h-7 lg:w-7"
                 >
                   <svg
                     aria-hidden="true"
-                    className="h-4 w-4 fill-current lg:h-3.5 lg:w-3.5"
+                    className="h-5 w-5 fill-current lg:h-3.5 lg:w-3.5"
                     viewBox="0 0 24 24"
                   >
                     <path d={s.path} />
@@ -113,7 +114,8 @@ export default function Footer() {
           </div>
 
           {/* Contact Info — compact rounded card on mobile, original left-bordered block on desktop */}
-          <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs text-foreground/90 space-y-2.5 lg:rounded-none lg:border-0 lg:border-l lg:border-primary/40 lg:bg-transparent lg:p-0 lg:pl-6 lg:space-y-0.5 lg:text-[11px] lg:text-primary">
+          <div className="rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs text-foreground/90 space-y-3 lg:rounded-none lg:border-0 lg:border-l lg:border-primary/40 lg:bg-transparent lg:p-0 lg:pl-6 lg:space-y-0.5 lg:text-[11px] lg:text-primary">
+            {/* Sri Lanka numbers */}
             <div className="flex items-start gap-2.5 lg:block">
               <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary lg:hidden" />
               <div className="min-w-0 leading-relaxed lg:leading-normal">
@@ -123,6 +125,7 @@ export default function Footer() {
               </div>
             </div>
 
+            {/* Japan / WhatsApp number */}
             <div className="flex items-start gap-2.5 lg:block">
               <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary lg:hidden" />
               <div className="min-w-0 leading-relaxed lg:leading-normal">
@@ -130,10 +133,20 @@ export default function Footer() {
                 <a href="tel:+819038410745" className="hover:underline whitespace-nowrap">
                   +81 90-3841-0745
                 </a>{" "}
-                <span className="text-muted-foreground lg:text-primary">(Call / WhatsApp)</span>
+                <span className="text-muted-foreground lg:text-primary">(</span>
+                <a
+                  href="https://wa.me/819038410745"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-primary hover:underline font-medium lg:text-primary"
+                >
+                  WhatsApp
+                </a>
+                <span className="text-muted-foreground lg:text-primary">)</span>
               </div>
             </div>
 
+            {/* Email */}
             <div className="flex items-start gap-2.5 lg:block">
               <Mail className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary lg:hidden" />
               <a
@@ -144,6 +157,7 @@ export default function Footer() {
               </a>
             </div>
 
+            {/* Website */}
             <div className="flex items-start gap-2.5 lg:block">
               <Globe className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary lg:hidden" />
               <a
@@ -156,27 +170,33 @@ export default function Footer() {
               </a>
             </div>
 
+            {/* Address — Google Maps link */}
             <div className="flex items-start gap-2.5 lg:block">
               <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary lg:hidden" />
-              <span className="min-w-0 leading-relaxed lg:leading-normal">
+              <a
+                href="https://maps.google.com/?q=No.+355+A+1%2F1+Hettipola+Road%2C+Kuliyapitiya"
+                target="_blank"
+                rel="noreferrer"
+                className="min-w-0 leading-relaxed hover:underline lg:leading-normal"
+              >
                 No. 355 A 1/1 Hettipola Road, Kuliyapitiya
-              </span>
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Subtle Divider & Bottom Attribution */}
-        <div className="mt-7 border-t border-border/80 pt-5 flex flex-col items-center justify-between gap-2 text-center text-xs text-muted-foreground sm:flex-row sm:text-left lg:mt-6 lg:pt-4">
+        {/* Bottom Attribution — always centered on mobile, split on desktop */}
+        <div className="mt-7 border-t border-border/80 pt-5 flex flex-col items-center gap-1.5 text-center text-xs text-muted-foreground lg:mt-6 lg:pt-4 lg:flex-row lg:justify-between lg:text-left lg:gap-0">
           <p>© {year} Tomoni Japanese Language Institute. All rights reserved.</p>
           <p>
-            Made by{" "}
+            Made with care by{" "}
             <a
               href="https://paxxmo.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-foreground hover:text-primary transition-colors underline underline-offset-4 decoration-border hover:decoration-primary"
+              className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
-              Paxxmo
+              Paxxmo ↗
             </a>
           </p>
         </div>
