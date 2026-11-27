@@ -196,7 +196,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="font-semibold text-primary hover:text-primary/80 transition-colors"
             >
-              Paxxmo ↗
+              Paxxmo
             </a>
           </p>
         </div>
